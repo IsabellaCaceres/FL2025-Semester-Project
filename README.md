@@ -20,7 +20,7 @@ Our project Goodreads2 is a tool designed to facilitate book recommendations and
 
 We want our app to include social features that allow users to join different book club-like communities based on their interests; These groups can also be filtered by our model depending on a variety of factors like activity, size, and general conversation vibe. Outside of these recommendations, our app will serve as a library of books that are read, being read, and to-be-read by our user and their groups/clubs. Our focus will be on facilitating conversations and accurate recommendations off of just a quote, vibe, or title.
 
-We plan to use local storage for our database, AWS lambda for the backend, and React Native + Expo for the frontend work.
+We plan to use local storage for our database and React Native + Expo for the frontend work.
 
 
 
