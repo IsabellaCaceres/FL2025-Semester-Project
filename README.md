@@ -35,17 +35,12 @@ Prerequisites:
 Install dependencies:
 
 ```bash
-# In repo root
 bun install
-
-# In the Expo app directory
-cd goodreads-2 && bun install
 ```
 
 Run the app with Bun:
 
 ```bash
-cd goodreads-2
 bun run start
 # or platform-specific
 bun run android
