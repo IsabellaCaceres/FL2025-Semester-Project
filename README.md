@@ -25,4 +25,4 @@ We plan to use local storage for our database, AWS lambda for the backend, and R
 
 
 ## How to Run
-The repository will be supplemented possible by a google drive link to our stored database that will need to be downloaded and stored to our repository folder in order to run with our project.
+The repository will be supplemented possible by a google drive link to our stored database that will need to be downloaded and stored to our repository folder in order to run with our project
