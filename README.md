@@ -26,3 +26,32 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 ## How to Run
 The repository will be supplemented possible by a google drive link to our stored database that will need to be downloaded and stored to our repository folder in order to run with our project.
+
+## Using Bun
+
+Prerequisites:
+- Bun v1.2.18 or newer
+
+Install dependencies:
+
+```bash
+# In repo root
+bun install
+
+# In the Expo app directory
+cd goodreads-2 && bun install
+```
+
+Run the app with Bun:
+
+```bash
+cd goodreads-2
+bun run start
+# or platform-specific
+bun run android
+bun run ios
+bun run web
+```
+
+Notes:
+- Replace `npm run` with `bun run`, and `npx` with `bunx`.
