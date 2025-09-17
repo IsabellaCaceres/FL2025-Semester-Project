@@ -50,3 +50,5 @@ bun run web
 
 Notes:
 - Replace `npm run` with `bun run`, and `npx` with `bunx`.
+
+if ur reading this ur bad at coding
