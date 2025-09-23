@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env sh
+set -eu
 
-# Export variables from .env so Expo can read EXPO_PUBLIC_*
-set -a
-if [ -f ./.env ]; then
-  . ./.env
-fi
-set +a
-
-exec expo start "$@"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+exec node "$SCRIPT_DIR/start.mjs" "$@"
 
 

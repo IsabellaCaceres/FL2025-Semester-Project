@@ -24,49 +24,58 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 
 
-## How to Run
+## Local Development
 
-Prerequisites:
-- Bun v1.2.18 or newer
-- One of:
-  - Local Supabase CLI installed (`brew install supabase/tap/supabase`), or
-  - Docker Desktop running (fallback)
+### 1. Prerequisites
 
-### Quick Start
+- [Bun](https://bun.sh) v1.2.18 or newer (required by the scripts)
+- Supabase CLI (the project auto-detects the first option that is available):
+  - **Recommended**: `bunx supabase` (no global install needed)
+  - Alternatively install the native CLI
+    - macOS: `brew install supabase/tap/supabase`
+    - Windows: `iwr https://supabase.com/cli/install/windows | iex`
+- Expo Go (mobile testing) or a web browser (web testing)
 
-1. Install dependencies:
+> Docker is no longer required for the default workflow.
+
+### 2. Environment setup
+
+1. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+2. **Start Supabase**
+
+   ```bash
+   bun run supabase:start
+   ```
+
+   The script automatically uses a local CLI if installed or falls back to `bunx supabase`. Sign in if prompted.
+
+3. **Export Supabase keys**
+
+   ```bash
+   bun run supabase:keys
+   ```
+
+   This writes `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` to `.env`.
+
+4. **Launch Expo**
+
+   ```bash
+   bun run start
+   ```
+
+   - `bun run web` for the in-browser preview
+   - `bun run ios` or `bun run android` for device simulators
+
+### 3. Supabase helpers
+
 ```bash
-bun install
-```
-
-2. Start Supabase services:
-```bash
-bun run supabase:start
-```
-
-3. Export Supabase keys to `.env`:
-```bash
-bun run supabase:keys
-```
-
-4. Start the app (web simulator):
-```bash
-bun run start
-```
-
-### Platform-Specific Commands
-
-```bash
-bun run android  # Android
-bun run ios      # iOS
-bun run web      # Web
-```
-
-### Useful Supabase Commands
-
-```bash
-bun run supabase:status   # Check status
-bun run supabase:reset    # Reset database
+bun run supabase:status   # Check container/service health
+bun run supabase:reset    # Reset database (drops data)
 bun run supabase:stop     # Stop services
 ```
 

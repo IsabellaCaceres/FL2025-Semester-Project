@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { execSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const keysPath = resolve(root, 'supabase/.temp/keys.json')
@@ -22,11 +22,16 @@ try {
 if (!url || !anon) {
   try {
     // Use project wrapper to ensure consistent CLI resolution
-    const out = execSync('bash ./scripts/supabase-cli.sh status | cat', { encoding: 'utf8' })
-    const urlMatch = out.match(/API URL:\s*(\S+)/)
-    const anonMatch = out.match(/anon key:\s*([^\n]+)/)
-    url = urlMatch?.[1] || url
-    anon = anonMatch?.[1] || anon
+    const { stdout } = spawnSync(process.execPath, ['./scripts/supabase-cli.mjs', 'status'], {
+      cwd: root,
+      encoding: 'utf8',
+    })
+    if (stdout) {
+      const urlMatch = stdout.match(/API URL:\s*(\S+)/)
+      const anonMatch = stdout.match(/anon key:\s*([^\n]+)/)
+      url = urlMatch?.[1] || url
+      anon = anonMatch?.[1] || anon
+    }
   } catch {}
 }
 

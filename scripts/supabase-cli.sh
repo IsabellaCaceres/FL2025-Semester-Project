@@ -1,18 +1,7 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/usr/bin/env sh
+set -eu
 
-WORKDIR="$(pwd)"
-
-# Prefer local Supabase CLI if available
-if command -v supabase >/dev/null 2>&1; then
-  exec supabase "$@"
-fi
-
-# Fallback: run Supabase CLI via Docker
-docker run --rm --pull=always \
-  -v "$WORKDIR:/workspace" \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -w /workspace \
-  ghcr.io/supabase/cli:latest "$@"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd)"
+exec node "$SCRIPT_DIR/supabase-cli.mjs" "$@"
 
 

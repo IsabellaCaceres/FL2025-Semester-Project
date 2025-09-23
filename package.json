@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "bash ./scripts/start.sh --web",
-    "android": "bash ./scripts/start.sh --android",
-    "ios": "bash ./scripts/start.sh --ios",
-    "web": "bash ./scripts/start.sh --web",
-    "supabase:start": "bash ./scripts/supabase-cli.sh start",
-    "supabase:stop": "bash ./scripts/supabase-cli.sh stop",
-    "supabase:status": "bash ./scripts/supabase-cli.sh status",
-    "supabase:reset": "bash ./scripts/supabase-cli.sh reset --no-confirm",
+    "start": "./scripts/start.sh --web",
+    "android": "./scripts/start.sh --android",
+    "ios": "./scripts/start.sh --ios",
+    "web": "./scripts/start.sh --web",
+    "supabase:start": "./scripts/supabase-cli.sh start",
+    "supabase:stop": "./scripts/supabase-cli.sh stop",
+    "supabase:status": "./scripts/supabase-cli.sh status",
+    "supabase:reset": "./scripts/supabase-cli.sh reset --no-confirm",
     "supabase:keys": "bun run ./scripts/export-supabase-keys.mjs"
   },
   "dependencies": {
