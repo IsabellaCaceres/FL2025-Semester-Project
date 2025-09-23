@@ -21,7 +21,8 @@ try {
 // 2) Fallback: parse `supabase status` output
 if (!url || !anon) {
   try {
-    const out = execSync('supabase status', { encoding: 'utf8' })
+    // Use project wrapper to ensure consistent CLI resolution
+    const out = execSync('bash ./scripts/supabase-cli.sh status | cat', { encoding: 'utf8' })
     const urlMatch = out.match(/API URL:\s*(\S+)/)
     const anonMatch = out.match(/anon key:\s*([^\n]+)/)
     url = urlMatch?.[1] || url

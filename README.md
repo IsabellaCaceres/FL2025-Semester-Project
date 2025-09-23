@@ -28,7 +28,9 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 Prerequisites:
 - Bun v1.2.18 or newer
-- Docker Desktop running (for Supabase)
+- One of:
+  - Local Supabase CLI installed (`brew install supabase/tap/supabase`), or
+  - Docker Desktop running (fallback)
 
 ### Quick Start
 
@@ -47,7 +49,7 @@ bun run supabase:start
 bun run supabase:keys
 ```
 
-4. Start the app:
+4. Start the app (web simulator):
 ```bash
 bun run start
 ```
@@ -68,4 +70,3 @@ bun run supabase:reset    # Reset database
 bun run supabase:stop     # Stop services
 ```
 
-if ur reading this ur bad at coding
