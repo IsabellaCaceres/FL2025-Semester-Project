@@ -25,56 +25,47 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 
 ## How to Run
-The repository will be supplemented possible by a google drive link to our stored database that will need to be downloaded and stored to our repository folder in order to run with our project.
-
-## Using Bun
 
 Prerequisites:
 - Bun v1.2.18 or newer
+- Docker Desktop running (for Supabase)
 
-Install dependencies:
+### Quick Start
 
+1. Install dependencies:
 ```bash
 bun install
 ```
 
-Run the app with Bun:
-
-```bash
-bun run start
-# or platform-specific
-bun run android
-bun run ios
-bun run web
-```
-
-### Local Supabase (Docker) for Auth
-
-Prerequisites:
-- Docker Desktop running
-
-Steps:
-1. Start Supabase services locally:
+2. Start Supabase services:
 ```bash
 bun run supabase:start
 ```
-2. Export URL and anon key to `.env`:
+
+3. Export Supabase keys to `.env`:
 ```bash
 bun run supabase:keys
 ```
-3. Start the app:
+
+4. Start the app:
 ```bash
 bun run start
 ```
 
-Helpful:
+### Platform-Specific Commands
+
 ```bash
-bun run supabase:status
-bun run supabase:reset
-bun run supabase:stop
+bun run android  # Android
+bun run ios      # iOS
+bun run web      # Web
 ```
 
-Notes:
-- Replace `npm run` with `bun run`, and `npx` with `bunx`.
+### Useful Supabase Commands
+
+```bash
+bun run supabase:status   # Check status
+bun run supabase:reset    # Reset database
+bun run supabase:stop     # Stop services
+```
 
 if ur reading this ur bad at coding

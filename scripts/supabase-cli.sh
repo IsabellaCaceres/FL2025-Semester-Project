@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-WORKDIR="/Users/andrew/Desktop/FL2025-Semester-Project"
+WORKDIR="$(pwd)"
 
 docker run --rm --pull=always \
   -v "$WORKDIR:/workspace" \

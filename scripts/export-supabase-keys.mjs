@@ -1,8 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
 
-const root = '/Users/andrew/Desktop/FL2025-Semester-Project'
+const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const keysPath = resolve(root, 'supabase/.temp/keys.json')
 const envPath = resolve(root, '.env')
 
