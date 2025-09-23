@@ -37,3 +37,6 @@ ios/build/
 # Temporary files
 *.tmp
 *.swp
+# Supabase local temp and generated
+supabase/.temp/
+supabase/.branches/

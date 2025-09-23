@@ -48,6 +48,32 @@ bun run ios
 bun run web
 ```
 
+### Local Supabase (Docker) for Auth
+
+Prerequisites:
+- Docker Desktop running
+
+Steps:
+1. Start Supabase services locally:
+```bash
+bun run supabase:start
+```
+2. Export URL and anon key to `.env`:
+```bash
+bun run supabase:keys
+```
+3. Start the app:
+```bash
+bun run start
+```
+
+Helpful:
+```bash
+bun run supabase:status
+bun run supabase:reset
+bun run supabase:stop
+```
+
 Notes:
 - Replace `npm run` with `bun run`, and `npx` with `bunx`.
 

@@ -3,13 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "bash ./scripts/start.sh",
+    "android": "bash ./scripts/start.sh --android",
+    "ios": "bash ./scripts/start.sh --ios",
+    "web": "bash ./scripts/start.sh --web",
+    "supabase:start": "bash ./scripts/supabase-cli.sh start",
+    "supabase:stop": "bash ./scripts/supabase-cli.sh stop",
+    "supabase:status": "bash ./scripts/supabase-cli.sh status",
+    "supabase:reset": "bash ./scripts/supabase-cli.sh reset --no-confirm",
+    "supabase:keys": "bun run ./scripts/export-supabase-keys.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "2.57.4",
     "bun": "^1.2.21",
     "expo": "~54.0.3",
     "expo-status-bar": "~3.0.8",
@@ -17,6 +24,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.4",
+    "react-native-get-random-values": "1.11.0",
+    "react-native-url-polyfill": "2.0.0",
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
