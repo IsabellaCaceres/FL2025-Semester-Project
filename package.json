@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "bash ./scripts/start.sh",
+    "start": "bash ./scripts/start.sh --web",
     "android": "bash ./scripts/start.sh --android",
     "ios": "bash ./scripts/start.sh --ios",
     "web": "bash ./scripts/start.sh --web",

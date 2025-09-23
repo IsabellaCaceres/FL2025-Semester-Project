@@ -1,8 +1,9 @@
 import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
 
-const root = '/Users/andrew/Desktop/FL2025-Semester-Project'
+const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const keysPath = resolve(root, 'supabase/.temp/keys.json')
 const envPath = resolve(root, '.env')
 
@@ -20,7 +21,8 @@ try {
 // 2) Fallback: parse `supabase status` output
 if (!url || !anon) {
   try {
-    const out = execSync('supabase status', { encoding: 'utf8' })
+    // Use project wrapper to ensure consistent CLI resolution
+    const out = execSync('bash ./scripts/supabase-cli.sh status | cat', { encoding: 'utf8' })
     const urlMatch = out.match(/API URL:\s*(\S+)/)
     const anonMatch = out.match(/anon key:\s*([^\n]+)/)
     url = urlMatch?.[1] || url
