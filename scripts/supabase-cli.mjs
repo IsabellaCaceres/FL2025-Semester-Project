@@ -88,13 +88,13 @@ export async function runSupabaseCli(args, options = {}) {
   let lastError
 
   try {
-    return await spawnCommand(bunxBinary, ['--bun', 'supabase', ...args], { stdio })
+    return await spawnCommand(bunxBinary, ['--bun', '@supabase/cli', ...args], { stdio })
   } catch (error) {
     lastError = error
   }
 
   try {
-    return await spawnCommand(npxBinary, ['supabase', ...args], { stdio })
+    return await spawnCommand(npxBinary, ['--yes', '@supabase/cli@latest', ...args], { stdio })
   } catch (error) {
     if (error.code === 'ENOENT') {
       const hint = win
