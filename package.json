@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "./scripts/start.sh --web",
-    "android": "./scripts/start.sh --android",
-    "ios": "./scripts/start.sh --ios",
-    "web": "./scripts/start.sh --web",
-    "supabase:start": "./scripts/supabase-cli.sh start",
-    "supabase:stop": "./scripts/supabase-cli.sh stop",
-    "supabase:status": "./scripts/supabase-cli.sh status",
-    "supabase:reset": "./scripts/supabase-cli.sh reset --no-confirm",
-    "supabase:keys": "bun run ./scripts/export-supabase-keys.mjs"
+    "start": "bun ./scripts/start.mjs --web",
+    "android": "bun ./scripts/start.mjs --android",
+    "ios": "bun ./scripts/start.mjs --ios",
+    "web": "bun ./scripts/start.mjs --web",
+    "supabase:start": "bun ./scripts/supabase-cli.mjs start",
+    "supabase:stop": "bun ./scripts/supabase-cli.mjs stop",
+    "supabase:status": "bun ./scripts/supabase-cli.mjs status",
+    "supabase:reset": "bun ./scripts/supabase-cli.mjs reset --no-confirm",
+    "supabase:keys": "bun ./scripts/export-supabase-keys.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",
