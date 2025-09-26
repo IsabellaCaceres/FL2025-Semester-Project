@@ -16,7 +16,7 @@ const localSupabaseCandidates = win
   : ['supabase']
 
 const bunxBinary = win ? 'bunx.cmd' : 'bunx'
-const bunxPackage = '@supabase/cli'
+const npxBinary = win ? 'npx.cmd' : 'npx'
 
 function collectStdout(child) {
   return new Promise((resolve) => {
@@ -85,16 +85,24 @@ export async function runSupabaseCli(args, options = {}) {
     }
   }
 
+  let lastError
+
   try {
-    return await spawnCommand(bunxBinary, [bunxPackage, ...args], { stdio })
+    return await spawnCommand(bunxBinary, ['--bun', 'supabase', ...args], { stdio })
+  } catch (error) {
+    lastError = error
+  }
+
+  try {
+    return await spawnCommand(npxBinary, ['supabase', ...args], { stdio })
   } catch (error) {
     if (error.code === 'ENOENT') {
       const hint = win
-        ? 'Install Bun and ensure bunx is on your PATH.'
-        : 'Install Bun (https://bun.sh) so bunx is available on your PATH.'
+        ? 'Install Bun (https://bun.sh) or Node.js so bunx/npx is available on your PATH.'
+        : 'Install Bun (https://bun.sh) or Node.js so bunx/npx is available on your PATH.'
       throw new Error(`Could not find Supabase CLI. ${hint}`)
     }
-    throw error
+    throw lastError || error
   }
 }
 

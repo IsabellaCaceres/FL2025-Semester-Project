@@ -7,11 +7,11 @@
     "android": "bun ./scripts/start.mjs --android",
     "ios": "bun ./scripts/start.mjs --ios",
     "web": "bun ./scripts/start.mjs --web",
-    "supabase:start": "bun ./scripts/supabase-cli.mjs start",
-    "supabase:stop": "bun ./scripts/supabase-cli.mjs stop",
-    "supabase:status": "bun ./scripts/supabase-cli.mjs status",
-    "supabase:reset": "bun ./scripts/supabase-cli.mjs reset --no-confirm",
-    "supabase:keys": "bun ./scripts/export-supabase-keys.mjs"
+    "supabase:start": "node ./scripts/supabase-cli.mjs start",
+    "supabase:stop": "node ./scripts/supabase-cli.mjs stop",
+    "supabase:status": "node ./scripts/supabase-cli.mjs status",
+    "supabase:reset": "node ./scripts/supabase-cli.mjs reset --no-confirm",
+    "supabase:keys": "node ./scripts/export-supabase-keys.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",
