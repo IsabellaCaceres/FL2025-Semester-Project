@@ -16,6 +16,7 @@ const localSupabaseCandidates = win
   : ['supabase']
 
 const bunxBinary = win ? 'bunx.cmd' : 'bunx'
+const bunxPackage = '@supabase/cli'
 
 function collectStdout(child) {
   return new Promise((resolve) => {
@@ -85,7 +86,7 @@ export async function runSupabaseCli(args, options = {}) {
   }
 
   try {
-    return await spawnCommand(bunxBinary, ['--bun', 'supabase', ...args], { stdio })
+    return await spawnCommand(bunxBinary, [bunxPackage, ...args], { stdio })
   } catch (error) {
     if (error.code === 'ENOENT') {
       const hint = win
