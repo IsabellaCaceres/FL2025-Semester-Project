@@ -10,6 +10,13 @@ const envPath = resolve(root, '.env')
 let url
 let anon
 
+function runSupabase(args) {
+  return spawnSync(process.execPath, ['./scripts/supabase-cli.mjs', ...args], {
+    cwd: root,
+    encoding: 'utf8',
+  })
+}
+
 // 1) Try keys.json (created by some CLI versions)
 try {
   const raw = await readFile(keysPath, 'utf8')
@@ -21,14 +28,22 @@ try {
 // 2) Fallback: parse `supabase status` output
 if (!url || !anon) {
   try {
-    // Use project wrapper to ensure consistent CLI resolution
-    const { stdout } = spawnSync(process.execPath, ['./scripts/supabase-cli.mjs', 'status'], {
-      cwd: root,
-      encoding: 'utf8',
-    })
+    const { stdout } = runSupabase(['status', '-o', 'env'])
+    if (stdout) {
+      const urlMatch = stdout.match(/^API_URL="?([^"\n]+)"?/m)
+      const anonMatch = stdout.match(/^ANON_KEY="?([^"\n]+)"?/m)
+      url = urlMatch?.[1] || url
+      anon = anonMatch?.[1] || anon
+    }
+  } catch {}
+}
+
+if (!url || !anon) {
+  try {
+    const { stdout } = runSupabase(['status'])
     if (stdout) {
       const urlMatch = stdout.match(/API URL:\s*(\S+)/)
-      const anonMatch = stdout.match(/anon key:\s*([^\n]+)/)
+      const anonMatch = stdout.match(/anon key:\s*([^\n]+)/i)
       url = urlMatch?.[1] || url
       anon = anonMatch?.[1] || anon
     }
