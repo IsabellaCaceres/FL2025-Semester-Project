@@ -3,6 +3,12 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TextInput, Alert, Pressable, ActivityIndicator } from 'react-native';
 import { supabase } from './lib/supabase';
 
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import GenreBrowse from "./pages/GenreBrowse";
+import BookDetail from "./pages/BookDetail";
+const Stack = createNativeStackNavigator();
+
 export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,14 +80,12 @@ export default function App() {
       {loading ? (
         <Text>Loading…</Text>
       ) : userEmail ? (
-        <View style={styles.center}>
-          <Text style={styles.hero}>Hello world!</Text>
-          <Text style={styles.subtitle}>{userEmail}</Text>
-          <View style={styles.spacer} />
-          <Pressable style={styles.button} onPress={signOut} disabled={submitting}>
-            <Text style={styles.buttonLabel}>Sign out</Text>
-          </Pressable>
-        </View>
+        <NavigationContainer>
+          <Stack.Navigator>
+            <Stack.Screen name="Browse" component={GenreBrowse} />
+            <Stack.Screen name="BookDetail" component={BookDetail} />
+          </Stack.Navigator>
+        </NavigationContainer>
       ) : (
         <View style={styles.form}>
           <Text style={styles.title}>Welcome</Text>
@@ -120,8 +124,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   center: { alignItems: 'center' },
   title: { fontSize: 22, fontWeight: '600', marginBottom: 16 },

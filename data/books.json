@@ -1,0 +1,162 @@
+[
+  {
+    "title": "Whispers in the Fog",
+    "author": "Clara Hensley",
+    "summary": "A detective unravels a string of murders in a coastal town shrouded in mist.",
+    "rating": 4.3,
+    "genres": ["mystery", "thriller"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Clockmaker’s Secret",
+    "author": "Evan Marlowe",
+    "summary": "An apprentice discovers his master’s clocks can alter time itself.",
+    "rating": 4.6,
+    "genres": ["fantasy", "mystery", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Love in the Ashes",
+    "author": "Sophie Delgado",
+    "summary": "Two survivors of a city fire find solace and romance amid the ruins.",
+    "rating": 3.9,
+    "genres": ["romance", "slice of life"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Silent Witness",
+    "author": "Marcus Trent",
+    "summary": "A mute girl holds the key to solving a high-profile murder case.",
+    "rating": 4.1,
+    "genres": ["thriller", "mystery"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Petals and Punchlines",
+    "author": "Naomi Fields",
+    "summary": "A florist with a sharp wit navigates love and laughter in a small town.",
+    "rating": 3.5,
+    "genres": ["romance", "comedy", "slice of life"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Dragon’s Pact",
+    "author": "Liam O’Connor",
+    "summary": "A reluctant knight forms an uneasy alliance with a dragon to save his kingdom.",
+    "rating": 4.7,
+    "genres": ["fantasy", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Shadows of the Archive",
+    "author": "Isabella Grant",
+    "summary": "A historian uncovers a conspiracy hidden in centuries-old manuscripts.",
+    "rating": 4.2,
+    "genres": ["mystery", "non-fiction", "thriller"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Last Laugh",
+    "author": "Derek Monroe",
+    "summary": "A stand-up comedian finds himself entangled in a dangerous mob scheme.",
+    "rating": 3.8,
+    "genres": ["comedy", "thriller", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Moonlit Promises",
+    "author": "Hannah Lee",
+    "summary": "Two childhood friends reconnect under the stars and rediscover their bond.",
+    "rating": 4.0,
+    "genres": ["romance", "slice of life"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Crimson Cipher",
+    "author": "Victor Hale",
+    "summary": "A cryptographer races against time to decode a message that could prevent war.",
+    "rating": 4.5,
+    "genres": ["thriller", "mystery", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Beneath the Willow Tree",
+    "author": "Elena Park",
+    "summary": "A young woman reflects on her family’s past while uncovering hidden truths.",
+    "rating": 3.7,
+    "genres": ["slice of life", "romance"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Phantom’s Game",
+    "author": "Julian Cross",
+    "summary": "A master thief plays a dangerous cat-and-mouse game with an obsessed detective.",
+    "rating": 4.4,
+    "genres": ["mystery", "thriller", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Echoes of Tomorrow",
+    "author": "Maya Chen",
+    "summary": "A scientist confronts the ethical dilemmas of predicting the future.",
+    "rating": 2.9,
+    "genres": ["non-fiction", "thriller"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Hearts in Bloom",
+    "author": "Rachel Summers",
+    "summary": "A gardener and a writer find unexpected love in a countryside retreat.",
+    "rating": 4.0,
+    "genres": ["romance", "slice of life", "comedy"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Iron Fortress",
+    "author": "Darius Cole",
+    "summary": "A band of rebels storms a tyrant’s stronghold in a desperate bid for freedom.",
+    "rating": 4.6,
+    "genres": ["fantasy", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Murder on Maple Street",
+    "author": "Olivia Brooks",
+    "summary": "A quiet neighborhood is shaken when a beloved teacher is found dead.",
+    "rating": 3.4,
+    "genres": ["mystery", "slice of life"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Hidden Truth",
+    "author": "Samuel Wright",
+    "summary": "A journalist risks everything to expose corruption at the highest levels.",
+    "rating": 4.2,
+    "genres": ["non-fiction", "thriller", "action"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Starlight Serenade",
+    "author": "Amelia Torres",
+    "summary": "A musician and a dreamer fall in love under the glow of city lights.",
+    "rating": 3.6,
+    "genres": ["romance", "comedy"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "The Witch’s Bargain",
+    "author": "Harper Quinn",
+    "summary": "A young woman strikes a dangerous deal with a witch to save her family.",
+    "rating": 4.5,
+    "genres": ["fantasy", "mystery"],
+    "image": "assets/cover.png"
+  },
+  {
+    "title": "Fragments of Reality",
+    "author": "Noah Patel",
+    "summary": "A philosopher challenges conventional wisdom in a groundbreaking exploration of truth.",
+    "rating": 1.8,
+    "genres": ["non-fiction", "slice of life"],
+    "image": "assets/cover.png"
+  }
+]
