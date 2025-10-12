@@ -16,6 +16,7 @@
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-navigation/bottom-tabs": "7.4.7",
     "@supabase/supabase-js": "2.57.4",
     "@types/ws": "8.18.1",
     "bun": "^1.2.21",
@@ -32,11 +33,12 @@
   },
   "devDependencies": {
     "@eslint/js": "9.35.0",
+    "@types/react": "~19.1.10",
     "eslint": "9.35.0",
     "eslint-plugin-react": "7.37.5",
     "globals": "16.4.0",
-    "supabase": "2.45.5",
     "react-native-dotenv": "^3.4.11",
+    "supabase": "2.45.5",
     "typescript-eslint": "8.43.0"
   },
   "private": true,
