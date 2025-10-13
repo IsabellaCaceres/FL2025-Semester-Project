@@ -14,7 +14,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
 import { libraryBooks, allBooks } from "../data/data";
 
-
 export default function LibraryScreen() {
   const [activeTab, setActiveTab] = useState("Library");
   const [lists, setLists] = useState([]);
@@ -57,25 +56,21 @@ export default function LibraryScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* Tabs */}
-      <View style={{ flexDirection: "row", marginBottom: 12 }}>
+      <View style={styles.tabRow}>
         {["Library", "My Lists"].map((tab) => (
           <Pressable
             key={tab}
             onPress={() => setActiveTab(tab)}
-            style={{
-              flex: 1,
-              padding: 10,
-              backgroundColor: activeTab === tab ? "#000" : "#ddd",
-              borderRadius: 8,
-              marginRight: 4,
-            }}
+            style={[
+              styles.tabButton,
+              activeTab === tab ? styles.tabButtonActive : null,
+            ]}
           >
             <Text
-              style={{
-                textAlign: "center",
-                color: activeTab === tab ? "#fff" : "#000",
-                fontWeight: "600",
-              }}
+              style={[
+                styles.tabButtonLabel,
+                activeTab === tab ? styles.tabButtonLabelActive : null,
+              ]}
             >
               {tab}
             </Text>
@@ -87,7 +82,11 @@ export default function LibraryScreen() {
         <ScrollView contentContainerStyle={styles.libraryGrid}>
           {libraryBooks.map((book, index) => (
             <View key={index} style={styles.bookCard}>
-              <Image source={book.cover} style={styles.bookCover} />
+              <Image
+                source={book.cover}
+                style={styles.bookCover}
+                resizeMode="cover"
+              />
               <Text style={styles.bookTitle} numberOfLines={2}>
                 {book.title}
               </Text>
@@ -97,7 +96,7 @@ export default function LibraryScreen() {
       ) : (
         <ScrollView>
           <Pressable
-            style={[styles.button, { marginBottom: 12 }]}
+            style={[styles.button, styles.createListButton]}
             onPress={() => setShowCreateListModal(true)}
           >
             <Text style={styles.buttonLabel}>Create New List</Text>
@@ -108,7 +107,11 @@ export default function LibraryScreen() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {list.books.map((book, index) => (
                   <View key={index} style={styles.bookCard}>
-                    <Image source={book.cover} style={styles.bookCover} />
+                    <Image
+                      source={book.cover}
+                      style={styles.bookCover}
+                      resizeMode="cover"
+                    />
                     <Text style={styles.bookTitle} numberOfLines={2}>
                       {book.title}
                     </Text>
@@ -142,27 +145,22 @@ export default function LibraryScreen() {
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-            <ScrollView style={{ maxHeight: 300, marginBottom: 12 }}>
+            <ScrollView style={styles.modalScroll}>
               {filteredBooks.map((book, index) => (
                 <Pressable
                   key={index}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 8,
-                    backgroundColor: selectedBooks.some(
-                      (b) => b.title === book.title
-                    )
-                      ? "#cce5ff"
-                      : "transparent",
-                    padding: 4,
-                    borderRadius: 6,
-                  }}
+                  style={[
+                    styles.listItem,
+                    selectedBooks.some((b) => b.title === book.title)
+                      ? styles.listItemSelected
+                      : null,
+                  ]}
                   onPress={() => toggleBookSelection(book)}
                 >
                   <Image
                     source={book.cover}
-                    style={{ width: 40, height: 60, marginRight: 8 }}
+                    style={styles.listItemImage}
+                    resizeMode="cover"
                   />
                   <Text>{book.title}</Text>
                 </Pressable>
@@ -172,7 +170,7 @@ export default function LibraryScreen() {
               <Text style={styles.buttonLabel}>Create List</Text>
             </Pressable>
             <Pressable
-              style={[styles.button, { backgroundColor: "#888", marginTop: 6 }]}
+              style={[styles.button, styles.buttonMuted]}
               onPress={() => {
                 setShowCreateListModal(false);
                 setSelectedBooks([]);

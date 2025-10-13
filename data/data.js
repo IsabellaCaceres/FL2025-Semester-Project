@@ -1,37 +1,8 @@
-// data.js
+// data/data.js
+import { libraryBooks as manifestLibraryBooks } from "../lib/epub-manifest";
 
-export const libraryBooks = [
-  {
-    title: "Moby Dick",
-    author: "Herman Melville",
-    cover: { uri: "https://via.placeholder.com/120x180.png?text=Moby+Dick" },
-  },
-  {
-    title: "Frankenstein",
-    author: "Mary Shelley",
-    cover: { uri: "https://via.placeholder.com/120x180.png?text=Frankenstein" },
-  },
-  {
-    title: "Romeo and Juliet",
-    author: "William Shakespeare",
-    cover: {
-      uri: "https://via.placeholder.com/120x180.png?text=Romeo+and+Juliet",
-    },
-  },
-  {
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    cover: {
-      uri: "https://via.placeholder.com/120x180.png?text=Pride+and+Prejudice",
-    },
-  },
-  {
-    title: "Alice's Adventures in Wonderland",
-    author: "Lewis Carroll",
-    cover: { uri: "https://via.placeholder.com/120x180.png?text=Alice" },
-  },
-];
-
+// Ensure we don't mutate the manifest export elsewhere.
+export const libraryBooks = manifestLibraryBooks.map((book) => ({ ...book }));
 
 export const recommendations = [
   {
@@ -129,7 +100,6 @@ export const recommendations = [
     cover: { uri: "https://via.placeholder.com/120x180.png?text=Tom+Sawyer" },
   },
 ];
-
 
 export const allGroups = [
   { id: 1, name: "Moby Dick Readers", relatedBook: "Moby Dick" },

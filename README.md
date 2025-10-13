@@ -65,7 +65,7 @@ We plan to use local storage for our database and React Native + Expo for the fr
 4. **Launch Expo**
 
    ```bash
-   bun run start
+      bun run start or bun expo start
    ```
 
    - `bun run web` for the in-browser preview
@@ -79,3 +79,17 @@ bun run supabase:reset    # Reset database (drops data)
 bun run supabase:stop     # Stop services
 ```
 
+### 4. Database schema & RLS
+
+- The base schema lives in `supabase/migrations/20250203090000_schema_rls.sql`. It provisions the core tables (`books`, `user_books`, `reading_progress`, `lists`, `list_items`, `groups`, `group_members`) and all row-level security policies.
+- After starting Supabase, run `bun run supabase:reset` once to apply the migration locally. This will recreate the database and execute the new schema by default.
+- To sanity-check policies, open a psql shell (`bun run supabase:status -o psql`) and, for each user you want to test, set the JWT claims before issuing queries (example):
+
+  ```sql
+  set local role authenticated;
+  set local "request.jwt.claim.role" = 'authenticated';
+  set local "request.jwt.claim.sub" = '<user-uuid-here>';
+  set local "request.jwt.claim.email" = 'user@example.com';
+  ```
+
+  With the claims set, inserts into `user_books`, `reading_progress`, `lists`, and `group_members` will only surface that user’s rows unless the group is public or they hold a moderator/owner role.

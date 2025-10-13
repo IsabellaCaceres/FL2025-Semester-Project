@@ -47,8 +47,8 @@ export default function App() {
     return () => {
       try {
         sub?.subscription?.unsubscribe();
-      } catch (e) {
-        // noop
+      } catch (_e) {
+        // ignore cleanup errors
       }
     };
   }, []);
