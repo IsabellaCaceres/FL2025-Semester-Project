@@ -6,7 +6,6 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import styles from "./styling/global-styles";
 import { theme } from "./styling/theme";
-import { supabase } from "./lib/supabase";
 import { LibraryProvider } from "./lib/library-context";
 import {
   fetchCurrentUser,
