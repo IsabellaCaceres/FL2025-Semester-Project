@@ -27,6 +27,7 @@
     "@types/ws": "8.18.1",
     "bun": "^1.2.21",
     "expo": "~54.0.3",
+    "expo-constants": "~18.0.8",
     "expo-status-bar": "~3.0.8",
     "jszip": "^3.10.1",
     "openai": "5.20.1",
