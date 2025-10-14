@@ -61,7 +61,7 @@ Both commands point the frontend at `http://127.0.0.1:4000` by default; set `EXP
 3. Start Supabase: `bun run supabase:start`
 4. Export Supabase keys: `bun run supabase:keys`
 5. Sync EPUB storage: `bun run supabase:sync-epubs`
-6. Start API server: `bun run server`
+6. RUN THIS IN A SEPARATE TERMINAL Start API server: `bun run server`
 7. Launch Expo: `bun expo start`
 
 
