@@ -11,10 +11,12 @@ import {
   Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styling/global-styles"
-import { libraryBooks, allGroups } from "../data/data";
+import styles from "../styling/global-styles";
+import { allGroups } from "../data/data";
+import { useLibrary } from "../lib/library-context";
 
 export default function GroupsScreen() {
+  const { library } = useLibrary();
   const [myGroups, setMyGroups] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [groupName, setGroupName] = useState("");
@@ -28,7 +30,7 @@ export default function GroupsScreen() {
       Alert.alert("Missing info", "Group name is required.");
       return;
     }
-    if (parseInt(maxMembers) > 256 || parseInt(maxMembers) < 2) {
+    if (parseInt(maxMembers, 10) > 256 || parseInt(maxMembers, 10) < 2) {
       Alert.alert("Invalid number", "Max members must be between 2 and 256.");
       return;
     }
@@ -36,10 +38,10 @@ export default function GroupsScreen() {
     const newGroup = {
       id: Date.now(),
       name: groupName.trim(),
-      vibeTags: vibeTags.split(",").map((tag) => tag.trim()),
-      maxMembers: parseInt(maxMembers),
+      vibeTags: vibeTags.split(",").map((tag) => tag.trim()).filter(Boolean),
+      maxMembers: parseInt(maxMembers, 10),
       isPublic,
-      invitees: invitees.split(",").map((i) => i.trim()),
+      invitees: invitees.split(",").map((i) => i.trim()).filter(Boolean),
     };
     setMyGroups([...myGroups, newGroup]);
     setShowCreateModal(false);
@@ -62,20 +64,13 @@ export default function GroupsScreen() {
 
   const suggestedGroups = allGroups.filter(
     (group) =>
-      libraryBooks.some((book) => book.title === group.relatedBook) &&
+      library.some((book) => book.title === group.relatedBook) &&
       !myGroups.some((g) => g.id === group.id)
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 12,
-        }}
-      >
+      <View style={styles.groupsHeader}>
         <Text style={styles.headerTitle}>
           {myGroups.length ? "My Groups" : "Suggested Groups"}
         </Text>
@@ -97,7 +92,7 @@ export default function GroupsScreen() {
                   <Text style={styles.groupBook}>Tags: {group.vibeTags.join(", ")}</Text>
                 ) : null}
                 <Pressable
-                  style={[styles.button, { marginTop: 8 }]}
+                  style={[styles.button, styles.groupButton]}
                   onPress={() =>
                     Alert.alert("Open Group", `Opening group: "${group.name}"`)
                   }
@@ -106,13 +101,26 @@ export default function GroupsScreen() {
                 </Pressable>
               </View>
             ))}
+            <Pressable
+              style={[styles.button, styles.groupButton]}
+              onPress={() =>
+                Alert.alert("Browse Groups", "Navigate to Browse Groups screen")
+              }
+            >
+              <Text style={styles.buttonLabel}>Browse Groups</Text>
+            </Pressable>
           </>
         ) : (
           suggestedGroups.map((group) => (
             <View key={group.id} style={styles.groupCard}>
               <Text style={styles.groupName}>{group.name}</Text>
-              <Text style={styles.groupBook}>Related to {group.relatedBook}</Text>
-              <Pressable style={styles.button} onPress={() => handleJoinGroup(group)}>
+              <Text style={styles.groupBook}>
+                Related to {group.relatedBook}
+              </Text>
+              <Pressable
+                style={styles.button}
+                onPress={() => handleJoinGroup(group)}
+              >
                 <Text style={styles.buttonLabel}>Join Group</Text>
               </Pressable>
             </View>
@@ -149,8 +157,8 @@ export default function GroupsScreen() {
               onChangeText={setMaxMembers}
               keyboardType="numeric"
             />
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
-              <Text style={{ marginRight: 8 }}>Public?</Text>
+            <View style={styles.switchRow}>
+              <Text style={styles.switchLabel}>Public?</Text>
               <Switch value={isPublic} onValueChange={setIsPublic} />
             </View>
             <TextInput
@@ -160,15 +168,15 @@ export default function GroupsScreen() {
               onChangeText={setInvitees}
             />
 
-            <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <View style={styles.modalButtonRow}>
               <Pressable
-                style={[styles.button, { flex: 1, marginRight: 6 }]}
+                style={[styles.button, styles.modalButton]}
                 onPress={handleCreateGroup}
               >
                 <Text style={styles.buttonLabel}>Create</Text>
               </Pressable>
               <Pressable
-                style={[styles.button, { backgroundColor: "#888", flex: 1, marginLeft: 6 }]}
+                style={[styles.button, styles.buttonMuted, styles.modalButton]}
                 onPress={() => setShowCreateModal(false)}
               >
                 <Text style={styles.buttonLabel}>Cancel</Text>

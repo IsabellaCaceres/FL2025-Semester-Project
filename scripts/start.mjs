@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { spawn } from 'node:child_process'
 import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { generateEpubManifest } from './generate-epub-manifest.mjs'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -39,6 +40,8 @@ function findExpoBinary() {
 async function main() {
   loadDotEnv()
 
+  await generateEpubManifest({ rootDir })
+
   const expoBin = findExpoBinary() || 'expo'
   const args = ['start', ...process.argv.slice(2)]
 
@@ -61,5 +64,4 @@ main().catch((error) => {
   console.error(error.message)
   process.exit(1)
 })
-
 

@@ -46,7 +46,13 @@ We plan to use local storage for our database and React Native + Expo for the fr
    bun install
    ```
 
-2. **Start Supabase**
+2. **Read epub files**
+
+   ```bash
+   bun run generate:epubs
+   ```
+
+3. **Start Supabase**
 
    ```bash
    bun run supabase:start
@@ -54,7 +60,7 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
    The script automatically uses a local CLI if installed or falls back to `bunx supabase`. Sign in if prompted.
 
-3. **Export Supabase keys**
+4. **Export Supabase keys**
 
    ```bash
    bun run supabase:keys
@@ -62,20 +68,34 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
    This writes `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` to `.env`.
 
-4. **Launch Expo**
+5. **Upload epub files to Supabase**
 
    ```bash
-   bun run start
+   bun run supabase:sync-epubs
    ```
 
-   - `bun run web` for the in-browser preview
-   - `bun run ios` or `bun run android` for device simulators
+6. **Launch Expo**
 
-### 3. Supabase helpers
+   ```bash
+   bun expo start
+   ```
 
-```bash
-bun run supabase:status   # Check container/service health
-bun run supabase:reset    # Reset database (drops data)
-bun run supabase:stop     # Stop services
-```
 
+# If running into Windows error where supabase command is nonfunctional, install supabase globally:
+1. **In powershell (can be done anywhere):**
+irm get.scoop.sh | iex
+scoop install supabase
+
+2. **Now cd to project:**
+supabase start
+
+3. **If Anon key doesn't generate, run:**
+supabase status -o json
+
+4. **Find "ANON_KEY" in the output, paste to .env file**
+Syntax:
+EXPO_PUBLIC_SUPABASE_URL=http://XXX.X.X.X:XXXXX
+EXPO_PUBLIC_SUPABASE_ANON_KEY={the anon key}
+
+5. **Then run:**
+bun run expo start

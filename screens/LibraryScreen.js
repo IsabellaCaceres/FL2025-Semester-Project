@@ -12,24 +12,26 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
-import { libraryBooks, allBooks } from "../data/data";
-
+import { useLibrary } from "../lib/library-context";
+import BookModal from "../components/BookModal";
 
 export default function LibraryScreen() {
+  const { library, allBooks, isLoading } = useLibrary();
   const [activeTab, setActiveTab] = useState("Library");
   const [lists, setLists] = useState([]);
   const [showCreateListModal, setShowCreateListModal] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooks, setSelectedBooks] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const filteredBooks = allBooks.filter((book) =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const toggleBookSelection = (book) => {
-    if (selectedBooks.some((b) => b.title === book.title)) {
-      setSelectedBooks(selectedBooks.filter((b) => b.title !== book.title));
+    if (selectedBooks.some((b) => b.id === book.id)) {
+      setSelectedBooks(selectedBooks.filter((b) => b.id !== book.id));
     } else {
       setSelectedBooks([...selectedBooks, book]);
     }
@@ -54,50 +56,62 @@ export default function LibraryScreen() {
     setShowCreateListModal(false);
   };
 
+  const handleBookPress = (book) => setSelectedBook(book);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Tabs */}
-      <View style={{ flexDirection: "row", marginBottom: 12 }}>
+      <View style={styles.tabRow}>
         {["Library", "My Lists"].map((tab) => (
           <Pressable
             key={tab}
             onPress={() => setActiveTab(tab)}
-            style={{
-              flex: 1,
-              padding: 10,
-              backgroundColor: activeTab === tab ? "#000" : "#ddd",
-              borderRadius: 8,
-              marginRight: 4,
-            }}
+            style={[
+              styles.tabButton,
+              activeTab === tab ? styles.tabButtonActive : null,
+            ]}
           >
             <Text
-              style={{
-                textAlign: "center",
-                color: activeTab === tab ? "#fff" : "#000",
-                fontWeight: "600",
-              }}
+              style={[
+                styles.tabButtonLabel,
+                activeTab === tab ? styles.tabButtonLabelActive : null,
+              ]}
             >
               {tab}
             </Text>
           </Pressable>
         ))}
-      </View>
+        </View>
 
-      {activeTab === "Library" ? (
-        <ScrollView contentContainerStyle={styles.libraryGrid}>
-          {libraryBooks.map((book, index) => (
-            <View key={index} style={styles.bookCard}>
-              <Image source={book.cover} style={styles.bookCover} />
-              <Text style={styles.bookTitle} numberOfLines={2}>
-                {book.title}
+        {activeTab === "Library" ? (
+          <ScrollView contentContainerStyle={styles.libraryGrid}>
+            {isLoading ? (
+              <Text style={styles.searchEmpty}>Syncing your library…</Text>
+            ) : library.length ? (
+              library.map((book) => (
+                <Pressable key={book.id} onPress={() => handleBookPress(book)}>
+                  <View style={styles.bookCard}>
+                    <Image
+                      source={book.coverSource ?? book.cover ?? undefined}
+                      style={styles.bookCover}
+                      resizeMode="cover"
+                    />
+                    <Text style={styles.bookTitle} numberOfLines={2}>
+                      {book.title}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))
+            ) : (
+              <Text style={styles.searchEmpty}>
+                Your library is currently empty. Find a book you like in Search!
               </Text>
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
+            )}
+          </ScrollView>
+        ) : (
         <ScrollView>
           <Pressable
-            style={[styles.button, { marginBottom: 12 }]}
+            style={[styles.button, styles.createListButton]}
             onPress={() => setShowCreateListModal(true)}
           >
             <Text style={styles.buttonLabel}>Create New List</Text>
@@ -107,12 +121,18 @@ export default function LibraryScreen() {
               <Text style={styles.groupName}>{list.name}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {list.books.map((book, index) => (
-                  <View key={index} style={styles.bookCard}>
-                    <Image source={book.cover} style={styles.bookCover} />
-                    <Text style={styles.bookTitle} numberOfLines={2}>
-                      {book.title}
-                    </Text>
-                  </View>
+                  <Pressable key={index} onPress={() => handleBookPress(book)}>
+                    <View style={styles.bookCard}>
+                      <Image
+                        source={book.cover}
+                        style={styles.bookCover}
+                        resizeMode="cover"
+                      />
+                      <Text style={styles.bookTitle} numberOfLines={2}>
+                        {book.title}
+                      </Text>
+                    </View>
+                  </Pressable>
                 ))}
               </ScrollView>
             </View>
@@ -142,27 +162,22 @@ export default function LibraryScreen() {
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
-            <ScrollView style={{ maxHeight: 300, marginBottom: 12 }}>
-              {filteredBooks.map((book, index) => (
+            <ScrollView style={styles.modalScroll}>
+              {filteredBooks.map((book) => (
                 <Pressable
-                  key={index}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 8,
-                    backgroundColor: selectedBooks.some(
-                      (b) => b.title === book.title
-                    )
-                      ? "#cce5ff"
-                      : "transparent",
-                    padding: 4,
-                    borderRadius: 6,
-                  }}
+                  key={book.id}
+                  style={[
+                    styles.listItem,
+                    selectedBooks.some((b) => b.id === book.id)
+                      ? styles.listItemSelected
+                      : null,
+                  ]}
                   onPress={() => toggleBookSelection(book)}
                 >
                   <Image
-                    source={book.cover}
-                    style={{ width: 40, height: 60, marginRight: 8 }}
+                    source={book.coverSource ?? book.cover ?? undefined}
+                    style={styles.listItemImage}
+                    resizeMode="cover"
                   />
                   <Text>{book.title}</Text>
                 </Pressable>
@@ -172,7 +187,7 @@ export default function LibraryScreen() {
               <Text style={styles.buttonLabel}>Create List</Text>
             </Pressable>
             <Pressable
-              style={[styles.button, { backgroundColor: "#888", marginTop: 6 }]}
+              style={[styles.button, styles.buttonMuted]}
               onPress={() => {
                 setShowCreateListModal(false);
                 setSelectedBooks([]);
@@ -185,6 +200,13 @@ export default function LibraryScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Book Modal */}
+      <BookModal
+        visible={!!selectedBook}
+        book={selectedBook}
+        onClose={() => setSelectedBook(null)}
+      />
     </SafeAreaView>
   );
 }
