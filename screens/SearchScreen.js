@@ -6,6 +6,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
@@ -21,11 +22,13 @@ export default function SearchScreen() {
     removeFromLibrary,
     isInLibrary,
     isLoading,
+    library,
   } = useLibrary();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [activeGenre, setActiveGenre] = useState(null);
+  const [showCongratsModal, setShowCongratsModal] = useState(false);
 
   const clearFilters = () => {
     setActiveGenre(null);
@@ -54,6 +57,14 @@ export default function SearchScreen() {
   const handleSearch = () => {
     const trimmed = query.trim();
     if (trimmed) setResults(search(trimmed));
+  };
+
+  const handleAddToLibrary = (bookId) => {
+    const wasEmpty = library.length === 0;
+    addToLibrary(bookId);
+    if (wasEmpty) {
+      setShowCongratsModal(true);
+    }
   };
 
   return (
@@ -129,7 +140,7 @@ export default function SearchScreen() {
                       onPress={() =>
                         inLibrary
                           ? removeFromLibrary(book.id)
-                          : addToLibrary(book.id)
+                          : handleAddToLibrary(book.id)
                       }
                       disabled={isLoading}
                     >
@@ -167,6 +178,29 @@ export default function SearchScreen() {
         book={selectedBook}
         onClose={() => setSelectedBook(null)}
       />
+
+      {/* Congratulations Modal */}
+      <Modal
+        visible={showCongratsModal}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setShowCongratsModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.congratsModal}>
+            <Text style={styles.congratsTitle}>🎉 Congratulations!</Text>
+            <Text style={styles.congratsText}>
+              You've added your first book! Check back home for your personalized recommendations.
+            </Text>
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => setShowCongratsModal(false)}
+            >
+              <Text style={styles.buttonLabel}>Got it!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
