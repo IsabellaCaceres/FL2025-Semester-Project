@@ -36,6 +36,7 @@ function spawnCommand(command, args, { stdio }) {
     const child = spawn(command, args, {
       cwd: rootDir,
       stdio: usePipe ? ['ignore', 'pipe', 'inherit'] : 'inherit',
+      shell: win,
     })
 
     const stdoutPromise = usePipe ? collectStdout(child) : Promise.resolve(undefined)
@@ -121,5 +122,4 @@ async function main() {
 if (process.argv[1] && process.argv[1].endsWith('supabase-cli.mjs')) {
   main()
 }
-
 
