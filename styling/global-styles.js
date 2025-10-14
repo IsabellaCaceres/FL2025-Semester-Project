@@ -1,385 +1,584 @@
-// styling/global-styles.js
 import { StyleSheet } from "react-native";
+import { theme } from "./theme";
 
 export default StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
-  center: { flex: 1, justifyContent: "center", alignItems: "center" },
-  form: { width: "80%", maxWidth: 420, alignSelf: "center" },
-  title: { fontSize: 22, fontWeight: "600", marginBottom: 16, textAlign: "center" },
-  hero: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
-  subtitle: { fontSize: 16, color: "#666", textAlign: "center" },
-  formStatus: { textAlign: "center", color: "#555", marginTop: 8 },
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.offwhite,
+    padding: theme.spacing.md,
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  form: {
+    width: "80%",
+    maxWidth: 420,
+    alignSelf: "center",
+  },
+  title: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeight.semiBold,
+    marginBottom: theme.spacing.md,
+    textAlign: "center",
+    color: theme.colors.black,
+  },
+  hero: {
+    fontSize: theme.fontSizes.xxl,
+    fontWeight: theme.fontWeight.bold,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.black,
+  },
+  subtitle: {
+    fontSize: theme.fontSizes.md,
+    color: theme.colors.black,
+    textAlign: "center",
+  },
+  formStatus: {
+    textAlign: "center",
+    color: theme.colors.black,
+    marginTop: theme.spacing.sm,
+  },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 12,
+    borderColor: theme.colors.black,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
+    backgroundColor: theme.colors.offwhite,
   },
   button: {
-    backgroundColor: "#000",
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: theme.colors.black,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
     alignItems: "center",
-    marginVertical: 6,
+    marginVertical: theme.spacing.sm,
   },
-  authActionRow: { flexDirection: "row", justifyContent: "space-between" },
-  authActionButton: { flex: 1, marginHorizontal: 4 },
-  buttonLabel: { color: "#fff", fontWeight: "600", fontSize: 16 },
-  buttonDisabled: { backgroundColor: "#ccc", opacity: 0.7 },
-  buttonAlt: { backgroundColor: "#4B9CD3", marginLeft: 8 },
-  buttonMuted: { backgroundColor: "#888" },
-  linkButton: { alignSelf: "center", marginTop: 8 },
-  linkButtonLabel: { color: "#007AFF", fontWeight: "600" },
-
+  authActionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  authActionButton: {
+    flex: 1,
+    marginHorizontal: theme.spacing.sm / 2,
+  },
+  buttonLabel: {
+    color: theme.colors.offwhite,
+    fontWeight: theme.fontWeight.semiBold,
+    fontSize: theme.fontSizes.md,
+  },
+  buttonDisabled: {
+    backgroundColor: theme.colors.black,
+    opacity: 0.7,
+  },
+  buttonAlt: {
+    backgroundColor: theme.colors.teal,
+    marginLeft: theme.spacing.sm,
+  },
+  buttonMuted: {
+    backgroundColor: theme.colors.black,
+  },
+  linkButton: {
+    alignSelf: "center",
+    marginTop: theme.spacing.sm,
+  },
+  linkButtonLabel: {
+    color: theme.colors.teal,
+    fontWeight: theme.fontWeight.semiBold,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: theme.spacing.md,
   },
-  headerTitle: { fontSize: 22, fontWeight: "bold" },
+  headerTitle: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.black,
+  },
   browseButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    backgroundColor: "#4B9CD3",
-    borderRadius: 8,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    backgroundColor: theme.colors.teal,
+    borderRadius: theme.borderRadius.md,
   },
-  browseText: { color: "#fff", fontWeight: "600" },
-  section: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 8 },
-  bookCard: { width: 140, alignItems: "center", marginRight: 12 },
-  bookCover: { width: 120, height: 170, borderRadius: 8, marginBottom: 6 },
-  bookTitle: { fontSize: 13, textAlign: "center" },
-  recommendationsGrid: { flexDirection: "row", flexWrap: "wrap" },
-
+  browseText: {
+    color: theme.colors.offwhite,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  section: {
+    marginBottom: theme.spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.semiBold,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.black,
+  },
+  bookCard: {
+    width: 140,
+    alignItems: "center",
+    marginRight: theme.spacing.md,
+  },
+  bookCover: {
+    width: 120,
+    height: 170,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+  },
+  bookTitle: {
+    fontSize: theme.fontSizes.sm,
+    textAlign: "center",
+    color: theme.colors.black,
+  },
+  recommendationsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 16,
+    padding: theme.spacing.md,
   },
   modalContainer: {
     width: "100%",
     maxWidth: 420,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
+    backgroundColor: theme.colors.offwhite,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
   },
   modalImage: {
     width: 160,
     height: 220,
-    borderRadius: 8,
+    borderRadius: theme.borderRadius.md,
     alignSelf: "center",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeight.bold,
     textAlign: "center",
-    marginBottom: 4,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.black,
   },
   modalAuthor: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#666",
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.black,
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   modalBlurb: {
-    fontSize: 14,
-    color: "#444",
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.black,
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
   modalButtonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
-
   searchHeaderContainer: {
-    backgroundColor: "#f2f2f2",
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 12,
+    backgroundColor: theme.colors.offwhite,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
+    marginTop: theme.spacing.md,
   },
-  searchHeaderText: { fontSize: 16, fontWeight: "600", marginBottom: 8 },
+  searchHeaderText: {
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.semiBold,
+    marginBottom: theme.spacing.sm,
+    color: theme.colors.black,
+  },
   searchInput: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
+    backgroundColor: theme.colors.offwhite,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
-    borderColor: "#ddd",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: theme.colors.black,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
   },
-
-  tabRow: { flexDirection: "row", marginBottom: 12 },
+  tabRow: {
+    flexDirection: "row",
+    marginBottom: theme.spacing.md,
+  },
   tabButton: {
     flex: 1,
-    padding: 10,
-    backgroundColor: "#ddd",
-    borderRadius: 8,
-    marginRight: 4,
+    padding: theme.spacing.sm,
+    backgroundColor: theme.colors.black,
+    borderRadius: theme.borderRadius.md,
+    marginRight: theme.spacing.xs,
   },
-  tabButtonActive: { backgroundColor: "#000" },
+  tabButtonActive: {
+    backgroundColor: theme.colors.black,
+  },
   tabButtonLabel: {
     textAlign: "center",
-    color: "#000",
-    fontWeight: "600",
+    color: theme.colors.offwhite,
+    fontWeight: theme.fontWeight.semiBold,
   },
-  tabButtonLabelActive: { color: "#fff" },
+  tabButtonLabelActive: {
+    color: theme.colors.offwhite,
+  },
   libraryGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    paddingBottom: 16,
+    paddingBottom: theme.spacing.md,
   },
-  createListButton: { marginBottom: 12 },
-  modalScroll: { maxHeight: 300, marginBottom: 12 },
+  createListButton: {
+    marginBottom: theme.spacing.md,
+  },
+  modalScroll: {
+    maxHeight: 300,
+    marginBottom: theme.spacing.md,
+  },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
-    padding: 6,
-    borderRadius: 6,
+    marginBottom: theme.spacing.sm,
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
   },
-  listItemSelected: { backgroundColor: "#cce5ff" },
-  listItemImage: { width: 40, height: 60, marginRight: 8, borderRadius: 6 },
-
+  listItemSelected: {
+    backgroundColor: theme.colors.teal,
+  },
+  listItemImage: {
+    width: 40,
+    height: 60,
+    marginRight: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+  },
   groupCard: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
+    backgroundColor: theme.colors.teal,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
-  groupName: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
-  groupBook: { color: "#555" },
+  groupName: {
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.semiBold,
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.offwhite,
+  },
+  groupBook: {
+    color: theme.colors.offwhite,
+  },
   groupsHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: theme.spacing.md,
   },
-  groupButton: { alignSelf: "center", marginTop: 8, paddingHorizontal: 20 },
-  switchRow: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  switchLabel: { marginRight: 8 },
-  modalButton: { flex: 1, marginHorizontal: 6 },
-
-  searchScroll: { paddingBottom: 20 },
-  searchHeaderTall: { minHeight: 140 },
-  searchRow: { flexDirection: "row", alignItems: "center", marginTop: 10 },
-  searchInputFlex: { flex: 1, marginRight: 10 },
+  groupButton: {
+    alignSelf: "center",
+    marginTop: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: theme.spacing.md,
+  },
+  switchLabel: {
+    marginRight: theme.spacing.sm,
+    color: theme.colors.black,
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: theme.spacing.sm,
+  },
+  searchScroll: {
+    paddingBottom: theme.spacing.lg,
+  },
+  searchHeaderTall: {
+    minHeight: 140,
+  },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: theme.spacing.sm,
+  },
+  searchInputFlex: {
+    flex: 1,
+    marginRight: theme.spacing.md,
+  },
   searchButton: {
-    backgroundColor: "#007AFF",
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
+    backgroundColor: theme.colors.teal,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
   },
-  searchButtonText: { color: "#fff", fontWeight: "600" },
-  searchResults: { marginTop: 20 },
+  searchButtonText: {
+    color: theme.colors.offwhite,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  searchResults: {
+    marginTop: theme.spacing.lg,
+  },
   searchActiveFilter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
-    paddingHorizontal: 4,
+    marginBottom: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
   },
-  searchActiveLabel: { fontWeight: "600" },
-  searchClearButton: { paddingHorizontal: 8, paddingVertical: 4 },
-  searchClearText: { color: "#007AFF", fontWeight: "600" },
+  searchActiveLabel: {
+    fontWeight: theme.fontWeight.semiBold,
+    color: theme.colors.black,
+  },
+  searchClearButton: {
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+  },
+  searchClearText: {
+    color: theme.colors.teal,
+    fontWeight: theme.fontWeight.semiBold,
+  },
   searchResultCard: {
-    padding: 12,
-    marginBottom: 10,
-    backgroundColor: "#fff",
-    borderRadius: 8,
+    padding: theme.spacing.md - 4,
+    marginBottom: theme.spacing.sm,
+    backgroundColor: theme.colors.offwhite,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: theme.colors.black,
   },
-  searchResultTitle: { fontWeight: "600", fontSize: 16 },
-  searchResultAuthor: { color: "#555", marginTop: 4 },
-  searchResultSummary: { color: "#444", marginTop: 6, fontSize: 14 },
-  searchResultMeta: { color: "#666", marginTop: 6, fontSize: 12 },
-  searchResultButton: { marginTop: 10 },
-  searchEmpty: { textAlign: "center", marginTop: 20, color: "#777" },
+  searchResultTitle: {
+    fontWeight: theme.fontWeight.semiBold,
+    fontSize: theme.fontSizes.md,
+    color: theme.colors.black,
+  },
+  searchResultAuthor: {
+    color: theme.colors.black,
+    marginTop: theme.spacing.xs,
+  },
+  searchResultSummary: {
+    color: theme.colors.black,
+    marginTop: theme.spacing.sm - 2,
+    fontSize: theme.fontSizes.sm,
+  },
+  searchResultMeta: {
+    color: theme.colors.black,
+    marginTop: theme.spacing.sm - 2,
+    fontSize: theme.fontSizes.sm - 2,
+  },
+  searchResultButton: {
+    marginTop: theme.spacing.sm,
+  },
+  searchEmpty: {
+    textAlign: "center",
+    marginTop: theme.spacing.lg,
+    color: theme.colors.black,
+  },
   genreGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: theme.spacing.lg,
   },
   genreCard: {
     flexBasis: "32%",
-    marginBottom: 10,
+    marginBottom: theme.spacing.sm + 2,
     height: 70,
-    backgroundColor: "#fff",
+    backgroundColor: theme.colors.offwhite,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
+    borderColor: theme.colors.black,
+    borderRadius: theme.borderRadius.md,
     justifyContent: "center",
     alignItems: "center",
   },
-  genreLabel: { fontWeight: "600", textAlign: "center", fontSize: 14 },
-  genreCardActive: { borderColor: "#000", backgroundColor: "#e8f0ff" },
-  emptyRecommendationsContainer: {
-  backgroundColor: '#f5f5f5',
-  borderRadius: 12,
-  padding: 24,
-  alignItems: 'center',
-  marginTop: 8,
-},
-emptyRecommendationsText: {
-  fontSize: 16,
-  color: '#333',
-  textAlign: 'center',
-  marginBottom: 16,
-  lineHeight: 22,
-},
-goButton: {
-  backgroundColor: '#007AFF',
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 10,
-  paddingHorizontal: 20,
-  borderRadius: 20,
-  gap: 8,
-},
-goButtonPressed: {
-  backgroundColor: '#0056b3',
-  opacity: 0.8,
-},
-goButtonText: {
-  color: '#fff',
-  fontSize: 16,
-  fontWeight: '600',
-},
-goButtonArrow: {
-  color: '#fff',
-  fontSize: 18,
-  fontWeight: '600',
-},
+  genreLabel: {
+    fontWeight: theme.fontWeight.semiBold,
+    textAlign: "center",
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.black,
+  },
+  genreCardActive: {
+    borderColor: theme.colors.black,
+    backgroundColor: theme.colors.teal,
+  },
 
-groupDetailHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  padding: 20,
-  borderBottomWidth: 1,
-  borderBottomColor: "#e0e0e0",
-  gap: 15,
-},
+  // Navigation styling
+  navigation: {
+    tabBar: {
+      backgroundColor: theme.colors.offwhite,
+      borderTopColor: theme.colors.offwhite,
+      borderTopWidth: 1,
+      height: 60,
+    },
+    tabBarLabel: {
+      fontSize: theme.fontSizes.sm,
+      fontWeight: theme.fontWeight.semiBold,
+      marginBottom: 4,
+    },
+    tabBarLabelActive: {
+      color: theme.colors.teal,
+    },
+    tabBarLabelInactive: {
+      color: theme.colors.black,
+    },
+    tabBarIconContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      marginTop: 4,
+    },
+    tabBarIconActive: {
+      tintColor: theme.colors.teal,
+    },
+    tabBarIconInactive: {
+      tintColor: theme.colors.black,
+    },
+  },
 
-groupProfilePic: {
-  width: 80,
-  height: 80,
-  borderRadius: 40,
-  backgroundColor: "#4A90E2",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  // Group and Recc changes
+  emptyRecommendationsText: {
+    fontSize: theme.fontSizes.md,
+    color: theme.colors.black,
+    textAlign: "center",
+    marginBottom: theme.spacing.md,
+    lineHeight: 22,
+  },
 
-groupProfileInitial: {
-  fontSize: 32,
-  fontWeight: "bold",
-  color: "#fff",
-},
+  goButton: {
+    backgroundColor: theme.colors.teal,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: theme.spacing.sm + 2, // ~10
+    paddingHorizontal: theme.spacing.lg + 4, // ~20
+    borderRadius: theme.borderRadius.xl, // 20+
+    gap: theme.spacing.sm,
+  },
+  goButtonPressed: {
+    backgroundColor: theme.colors.black, // fallback darker shade
+    opacity: 0.8,
+  },
+  goButtonText: {
+    color: theme.colors.offwhite,
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  goButtonArrow: {
+    color: theme.colors.offwhite,
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeight.semiBold,
+  },
 
-groupDetailHeaderText: {
-  flex: 1,
-},
+  groupDetailHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.black,
+    gap: theme.spacing.md,
+  },
 
-groupDetailSubtext: {
-  fontSize: 12,
-  color: "#666",
-  marginTop: 4,
-},
+  groupProfilePic: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: theme.colors.teal,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  groupProfileInitial: {
+    fontSize: theme.fontSizes.xl + 8,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.offwhite,
+  },
+  groupDetailHeaderText: {
+    flex: 1,
+  },
+  groupDetailSubtext: {
+    fontSize: theme.fontSizes.sm - 2,
+    color: theme.colors.black,
+    marginTop: theme.spacing.xs,
+  },
 
-joinButton: {
-  backgroundColor: "#E25822",
-  paddingHorizontal: 30,
-  paddingVertical: 12,
-  borderRadius: 25,
-},
+  joinButton: {
+    backgroundColor: theme.colors.coffee,
+    paddingHorizontal: theme.spacing.xl + 6,
+    paddingVertical: theme.spacing.md - 4, 
+    borderRadius: theme.borderRadius.xl + 13, 
+  },
 
-currentlyReadingSection: {
-  padding: 20,
-  backgroundColor: "#f5f5f5",
-},
+  currentlyReadingSection: {
+    padding: theme.spacing.lg,
+    backgroundColor: theme.colors.beige,
+  },
 
-sectionTitle: {
-  fontSize: 14,
-  fontWeight: "600",
-  letterSpacing: 1,
-  color: "#333",
-  marginBottom: 15,
-},
+  sectionTitle: {
+    fontSize: theme.fontSizes.sm + 2,
+    fontWeight: theme.fontWeight.semiBold,
+    letterSpacing: 1,
+    color: theme.colors.black,
+    marginBottom: theme.spacing.md,
+  },
 
-bookDetailRow: {
-  flexDirection: "row",
-  gap: 15,
-  backgroundColor: "#fff",
-  padding: 15,
-  borderRadius: 8,
-},
+  bookDetailRow: {
+    flexDirection: "row",
+    gap: theme.spacing.md,
+    backgroundColor: theme.colors.offwhite,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
 
-bookCoverPlaceholder: {
-  width: 120,
-  height: 180,
-  backgroundColor: "#e0e0e0",
-  borderRadius: 4,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  bookCoverPlaceholder: {
+    width: 120,
+    height: 180,
+    backgroundColor: theme.colors.black,
+    borderRadius: theme.borderRadius.sm,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  placeholderText: {
+    color: theme.colors.black,
+    fontSize: theme.fontSizes.sm - 2,
+  },
 
-placeholderText: {
-  color: "#999",
-  fontSize: 12,
-},
+  bookDetailInfo: {
+    flex: 1,
+  },
+  bookDetailTitle: {
+    fontSize: theme.fontSizes.lg,
+    fontWeight: theme.fontWeight.semiBold,
+    marginBottom: theme.spacing.sm + 2,
+    color: theme.colors.black,
+  },
+  bookDetailDescription: {
+    fontSize: theme.fontSizes.sm,
+    lineHeight: 20,
+    color: theme.colors.black,
+    marginBottom: theme.spacing.sm,
+  },
+  showMoreLink: {
+    fontSize: theme.fontSizes.sm,
+    color: theme.colors.teal,
+    textDecorationLine: "underline",
+    marginTop: theme.spacing.xs,
+  },
 
-bookDetailInfo: {
-  flex: 1,
-},
+  groupDetailFooter: {
+    padding: theme.spacing.lg,
+    alignItems: "center",
+  },
+  stayConnectedText: {
+    fontSize: theme.fontSizes.md,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.black,
+  },
 
-bookDetailTitle: {
-  fontSize: 18,
-  fontWeight: "600",
-  marginBottom: 10,
-  color: "#333",
-},
+  modalCloseButton: {
+    marginTop: theme.spacing.sm,
+  },
 
-bookDetailDescription: {
-  fontSize: 14,
-  lineHeight: 20,
-  color: "#666",
-  marginBottom: 8,
-},
-
-showMoreLink: {
-  fontSize: 14,
-  color: "#4A90E2",
-  textDecorationLine: "underline",
-  marginTop: 5,
-},
-
-groupDetailFooter: {
-  padding: 20,
-  alignItems: "center",
-},
-
-stayConnectedText: {
-  fontSize: 16,
-  fontWeight: "500",
-  color: "#333",
-},
-
-modalCloseButton: {
-  marginTop: 10,
-},
-
-openChatButton: {
-  backgroundColor: "#4A90E2",
-  marginTop: 10,
-  marginBottom: 5,
-},
-
+  openChatButton: {
+    backgroundColor: theme.colors.teal,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+  },
 });
