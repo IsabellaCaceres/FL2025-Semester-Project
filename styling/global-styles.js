@@ -24,10 +24,14 @@ export default StyleSheet.create({
     alignItems: "center",
     marginVertical: 6,
   },
+  authActionRow: { flexDirection: "row", justifyContent: "space-between" },
+  authActionButton: { flex: 1, marginHorizontal: 4 },
   buttonLabel: { color: "#fff", fontWeight: "600", fontSize: 16 },
   buttonDisabled: { backgroundColor: "#ccc", opacity: 0.7 },
   buttonAlt: { backgroundColor: "#4B9CD3", marginLeft: 8 },
   buttonMuted: { backgroundColor: "#888" },
+  linkButton: { alignSelf: "center", marginTop: 8 },
+  linkButtonLabel: { color: "#007AFF", fontWeight: "600" },
 
   header: {
     flexDirection: "row",
