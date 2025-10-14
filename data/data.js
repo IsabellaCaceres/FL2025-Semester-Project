@@ -1,0 +1,12 @@
+// data/data.js
+export const allGroups = [
+  { id: 1, name: "Moby Dick Readers", relatedBook: "Moby Dick" },
+  { id: 2, name: "Romantics United", relatedBook: "Frankenstein" },
+  { id: 3, name: "Shakespeare Circle", relatedBook: "Romeo and Juliet" },
+  { id: 4, name: "Jane Austen Society", relatedBook: "Pride and Prejudice" },
+  {
+    id: 5,
+    name: "Wonderland Enthusiasts",
+    relatedBook: "Alice's Adventures in Wonderland",
+  },
+];

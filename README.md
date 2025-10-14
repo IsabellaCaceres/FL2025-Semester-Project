@@ -24,57 +24,58 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 
 
-## How to Run
-The repository will be supplemented possible by a google drive link to our stored database that will need to be downloaded and stored to our repository folder in order to run with our project.
+## Local Development
 
-## Using Bun
+### 1. Prerequisites
 
-Prerequisites:
-- Bun v1.2.18 or newer
+- [Bun](https://bun.sh) v1.2.18 or newer (required by the scripts)
+- Supabase CLI (the project auto-detects the first option that is available):
+  - **Recommended**: `bunx supabase` (no global install needed)
+  - Alternatively install the native CLI
+    - macOS: `brew install supabase/tap/supabase`
+    - Windows: `iwr https://supabase.com/cli/install/windows | iex`
+- Expo Go (mobile testing) or a web browser (web testing)
 
-Install dependencies:
+> Docker is no longer required for the default workflow.
 
-```bash
-bun install
-```
+### 2. Environment setup
 
-Run the app with Bun:
+1. **Install dependencies**
 
-```bash
-bun run start
-# or platform-specific
-bun run android
-bun run ios
-bun run web
-```
+   ```bash
+   bun install
+   ```
 
-### Local Supabase (Docker) for Auth
+2. **Read epub files**
 
-Prerequisites:
-- Docker Desktop running
+   ```bash
+   npm run generate:epubs
+   ```
 
-Steps:
-1. Start Supabase services locally:
-```bash
-bun run supabase:start
-```
-2. Export URL and anon key to `.env`:
-```bash
-bun run supabase:keys
-```
-3. Start the app:
-```bash
-bun run start
-```
+3. **Start Supabase**
 
-Helpful:
-```bash
-bun run supabase:status
-bun run supabase:reset
-bun run supabase:stop
-```
+   ```bash
+   bun run supabase:start
+   ```
 
-Notes:
-- Replace `npm run` with `bun run`, and `npx` with `bunx`.
+   The script automatically uses a local CLI if installed or falls back to `bunx supabase`. Sign in if prompted.
 
-if ur reading this ur bad at coding
+4. **Export Supabase keys**
+
+   ```bash
+   bun run supabase:keys
+   ```
+
+   This writes `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` to `.env`.
+
+5. **Upload epub files to Supabase**
+
+   ```bash
+   bun run supabase:sync-epubs
+   ```
+
+6. **Launch Expo**
+
+   ```bash
+   bun expo start
+   ```

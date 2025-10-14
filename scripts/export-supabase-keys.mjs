@@ -1,13 +1,22 @@
 import { readFile, writeFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
-import { execSync } from 'node:child_process'
+import { resolve, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { spawnSync } from 'node:child_process'
 
-const root = '/Users/andrew/Desktop/FL2025-Semester-Project'
+const root = dirname(dirname(fileURLToPath(import.meta.url)))
 const keysPath = resolve(root, 'supabase/.temp/keys.json')
 const envPath = resolve(root, '.env')
 
 let url
 let anon
+let service
+
+function runSupabase(args) {
+  return spawnSync(process.execPath, ['./scripts/supabase-cli.mjs', ...args], {
+    cwd: root,
+    encoding: 'utf8',
+  })
+}
 
 // 1) Try keys.json (created by some CLI versions)
 try {
@@ -15,16 +24,35 @@ try {
   const json = JSON.parse(raw)
   url = json.api_url
   anon = json.anon
+  service = json.service_role
 } catch {}
 
 // 2) Fallback: parse `supabase status` output
 if (!url || !anon) {
   try {
-    const out = execSync('supabase status', { encoding: 'utf8' })
-    const urlMatch = out.match(/API URL:\s*(\S+)/)
-    const anonMatch = out.match(/anon key:\s*([^\n]+)/)
-    url = urlMatch?.[1] || url
-    anon = anonMatch?.[1] || anon
+    const { stdout } = runSupabase(['status', '-o', 'env'])
+    if (stdout) {
+      const urlMatch = stdout.match(/^API_URL="?([^"\n]+)"?/m)
+      const anonMatch = stdout.match(/^ANON_KEY="?([^"\n]+)"?/m)
+      const serviceMatch = stdout.match(/^SERVICE_ROLE_KEY="?([^"\n]+)"?/m)
+      url = urlMatch?.[1] || url
+      anon = anonMatch?.[1] || anon
+      service = serviceMatch?.[1] || service
+    }
+  } catch {}
+}
+
+if (!url || !anon) {
+  try {
+    const { stdout } = runSupabase(['status'])
+    if (stdout) {
+      const urlMatch = stdout.match(/API URL:\s*(\S+)/)
+      const anonMatch = stdout.match(/anon key:\s*([^\n]+)/i)
+      const serviceMatch = stdout.match(/Secret key:\s*([^\s\n]+)/i)
+      url = urlMatch?.[1] || url
+      anon = anonMatch?.[1] || anon
+      service = serviceMatch?.[1] || service
+    }
   } catch {}
 }
 
@@ -36,8 +64,18 @@ if (!anon) {
   process.exit(1)
 }
 
-const content = `EXPO_PUBLIC_SUPABASE_URL=${url}\nEXPO_PUBLIC_SUPABASE_ANON_KEY=${anon}\n`
-await writeFile(envPath, content, 'utf8')
-console.log('Wrote .env with Supabase URL and anon key')
+const lines = [
+  `EXPO_PUBLIC_SUPABASE_URL=${url}`,
+  `EXPO_PUBLIC_SUPABASE_ANON_KEY=${anon}`,
+]
 
+if (service) {
+  lines.push(`SUPABASE_SERVICE_ROLE_KEY=${service}`)
+} else {
+  console.warn('Warning: Could not find service_role key. Some scripts (e.g. supabase:sync-epubs) need it.')
+}
+
+const content = `${lines.join('\n')}\n`
+await writeFile(envPath, content, 'utf8')
+console.log('Wrote .env with Supabase URL, anon key, and service role key (if available)')
 
