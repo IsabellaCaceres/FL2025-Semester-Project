@@ -259,7 +259,6 @@ goButtonArrow: {
   fontSize: 18,
   fontWeight: '600',
 },
-// Add these styles to your global-styles.js file
 
 groupDetailHeader: {
   flexDirection: "row",
