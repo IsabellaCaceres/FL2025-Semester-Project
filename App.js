@@ -1,19 +1,18 @@
 // app.js
 import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import styles from "./styling/global-styles";
-import { supabase } from "./lib/supabase";
 import { LibraryProvider } from "./lib/library-context";
+import {
+  fetchCurrentUser,
+  signIn as apiSignIn,
+  signUp as apiSignUp,
+  signOut as apiSignOut,
+  resetPassword as apiResetPassword,
+} from "./lib/api";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
@@ -40,39 +39,13 @@ export default function App() {
     user?.user_metadata?.username ?? user?.email ?? user?.user_metadata?.full_name ?? null;
 
   useEffect(() => {
-    const init = async () => {
-      const { data, error } = await supabase.auth.getUser();
-      if (error) {
-        console.warn("getUser error:", error.message);
-        const message = error.message?.toLowerCase() ?? "";
-        if (error.status === 403 || message.includes("sub claim")) {
-          try {
-            await supabase.auth.signOut();
-          } catch (signOutError) {
-            console.warn("signOut after getUser error failed:", signOutError.message);
-          }
-        }
-      }
-      setUser(error ? null : data?.user ?? null);
+    const loadUser = async () => {
+      const current = await fetchCurrentUser();
+      setUser(current);
       setLoading(false);
     };
-    init();
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => {
-      try {
-        sub?.subscription?.unsubscribe();
-      } catch (_e) {
-        // ignore cleanup errors
-      }
-    };
+    loadUser();
   }, []);
-
-  const buildAuthEmail = (rawUsername) =>
-    `${rawUsername.toLowerCase()}@local.goodreads-demo`;
 
   const normalizeUsernameInput = () => {
     const trimmed = username.trim();
@@ -97,30 +70,16 @@ export default function App() {
       setStatusMessage("Enter your password to sign in.");
       return;
     }
-    const emailForAuth = buildAuthEmail(normalized);
     setSubmittingAction("signIn");
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: emailForAuth,
-        password,
-      });
-      if (error) {
-        const lower = (error.message || "").toLowerCase();
-        if (lower.includes("invalid login credentials")) {
-          setStatusMessage("Incorrect username or password. Try again or use Sign Up.");
-        } else {
-          setStatusMessage(error.message || "Sign in error.");
-        }
+      const userResponse = await apiSignIn(normalized, password);
+      if (!userResponse) {
+        setStatusMessage("Incorrect username or password. Try again or use Sign Up.");
         return;
       }
+      setUser(userResponse);
       setStatusMessage(`Welcome back, ${normalized}!`);
-      if (data?.user?.user_metadata?.username !== normalized) {
-        await supabase.auth.updateUser({ data: { username: normalized } });
-      }
       setPassword("");
-    } catch (error) {
-      console.error("Sign in error:", error);
-      setStatusMessage("Unable to sign in. Is Supabase running?");
     } finally {
       setSubmittingAction(null);
     }
@@ -138,43 +97,16 @@ export default function App() {
       setStatusMessage("Password must be at least 6 characters long.");
       return;
     }
-    const emailForAuth = buildAuthEmail(normalized);
     setSubmittingAction("signUp");
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: emailForAuth,
-        password,
-        options: { data: { username: normalized } },
-      });
-      if (error) {
-        const lower = (error.message || "").toLowerCase();
-        if (error.code === "user_already_exists" || lower.includes("already") || lower.includes("exists")) {
-          setStatusMessage("That username is already taken. Use Sign In instead.");
-        } else {
-          setStatusMessage(error.message || "Sign up error.");
-        }
+      const userResponse = await apiSignUp(normalized, password);
+      if (!userResponse) {
+        setStatusMessage("Unable to create your account right now. Try again soon.");
         return;
       }
-      let session = data.session;
-      if (!session) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: emailForAuth,
-          password,
-        });
-        if (signInError) {
-          setStatusMessage("Account created, but automatic sign-in failed. Try signing in now.");
-          return;
-        }
-        session = signInData.session;
-      }
-      if (session?.user?.user_metadata?.username !== normalized) {
-        await supabase.auth.updateUser({ data: { username: normalized } });
-      }
+      setUser(userResponse);
       setStatusMessage(`Account created. You're signed in as ${normalized}.`);
       setPassword("");
-    } catch (error) {
-      console.error("Sign up error:", error);
-      setStatusMessage("Unable to sign up. Is Supabase running?");
     } finally {
       setSubmittingAction(null);
     }
@@ -200,37 +132,14 @@ export default function App() {
       setStatusMessage("New password must be different from the current password.");
       return;
     }
-    const emailForAuth = buildAuthEmail(normalized);
     setSubmittingAction("reset");
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: emailForAuth,
-        password: resetCurrentPassword,
-      });
-      if (signInError) {
-        const lower = (signInError.message || "").toLowerCase();
-        setStatusMessage(
-          lower.includes("invalid") || lower.includes("password")
-            ? "Current password is incorrect."
-            : signInError.message || "Unable to verify current password."
-        );
-        return;
-      }
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: resetNewPassword,
-      });
-      if (updateError) {
-        setStatusMessage(updateError.message || "Could not update password.");
-        return;
-      }
+      await apiResetPassword(normalized, resetCurrentPassword, resetNewPassword);
       setStatusMessage("Password updated. Use your new password next time you sign in.");
       setResetCurrentPassword("");
       setResetNewPassword("");
       setShowReset(false);
       setPassword("");
-    } catch (error) {
-      console.error("Reset password error:", error);
-      setStatusMessage("Unable to reset password right now.");
     } finally {
       setSubmittingAction(null);
     }
@@ -251,18 +160,15 @@ export default function App() {
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) Alert.alert("Sign out error", error.message);
-    else {
-      setUser(null);
-      setUsername("");
-      setPassword("");
-      setShowReset(false);
-      setResetCurrentPassword("");
-      setResetNewPassword("");
-      setSubmittingAction(null);
-      setStatusMessage(DEFAULT_AUTH_STATUS);
-    }
+    await apiSignOut();
+    setUser(null);
+    setUsername("");
+    setPassword("");
+    setShowReset(false);
+    setResetCurrentPassword("");
+    setResetNewPassword("");
+    setSubmittingAction(null);
+    setStatusMessage(DEFAULT_AUTH_STATUS);
   };
 
   if (loading) {

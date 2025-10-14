@@ -8,11 +8,11 @@ export default function BookModal({ visible, book, onClose }) {
   const { addToLibrary, removeFromLibrary, isInLibrary } = useLibrary();
   const [readerOpen, setReaderOpen] = useState(false);
 
-  if (!visible || !book) return null;
-
   useEffect(() => {
     if (!visible) setReaderOpen(false);
   }, [visible, book?.id]);
+
+  if (!visible || !book) return null;
 
   const authors = book.authors.length
     ? book.authors.join(", ")

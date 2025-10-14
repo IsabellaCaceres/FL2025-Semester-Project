@@ -40,45 +40,29 @@ We plan to use local storage for our database and React Native + Expo for the fr
 
 ### 2. Environment setup
 
-1. **Install dependencies**
+1. **Auto start everything (installs deps, starts Supabase, keys, sync, API server, Expo)**
 
    ```bash
-   bun install
+   bun run dev:auto
    ```
 
-2. **Read epub files**
+2. **Auto start with a Supabase reset first**
 
    ```bash
-   bun run generate:epubs
+   bun run dev:auto:reset
    ```
 
-3. **Start Supabase**
+Both commands point the frontend at `http://127.0.0.1:4000` by default; set `EXPO_PUBLIC_API_URL` in `.env` to override.
 
-   ```bash
-   bun run supabase:start
-   ```
+### Manual command sequence
 
-   The script automatically uses a local CLI if installed or falls back to `bunx supabase`. Sign in if prompted.
-
-4. **Export Supabase keys**
-
-   ```bash
-   bun run supabase:keys
-   ```
-
-   This writes `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` to `.env`.
-
-5. **Upload epub files to Supabase**
-
-   ```bash
-   bun run supabase:sync-epubs
-   ```
-
-6. **Launch Expo**
-
-   ```bash
-   bun expo start
-   ```
+1. Install dependencies: `bun install`
+2. Generate EPUB manifest: `bun run generate:epubs`
+3. Start Supabase: `bun run supabase:start`
+4. Export Supabase keys: `bun run supabase:keys`
+5. Sync EPUB storage: `bun run supabase:sync-epubs`
+6. Start API server: `bun run server`
+7. Launch Expo: `bun expo start`
 
 
 # If running into Windows error where supabase command is nonfunctional, install supabase globally:

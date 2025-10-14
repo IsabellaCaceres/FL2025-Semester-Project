@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Modal, View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import JSZip from "jszip";
-import { supabase } from "../lib/supabase";
+import { downloadBook } from "../lib/api";
 import { useLibrary } from "../lib/library-context";
 import styles from "../styling/global-styles";
 
@@ -50,17 +50,11 @@ export default function BookReaderModal({ book, visible, onClose }) {
 
       try {
         const record = getBookRecord(book.contentHash);
-        if (!record || !record.storage_path) {
-          throw new Error(
-            "Missing EPUB storage path. Run `bun run supabase:sync-epubs` to upload assets."
-          );
+        if (!record) {
+          throw new Error("Missing EPUB storage path. Run `bun run supabase:sync-epubs` to upload assets.");
         }
 
-        const { data, error: downloadError } = await supabase.storage
-          .from("epubs")
-          .download(record.storage_path);
-        if (downloadError) throw downloadError;
-        const buffer = await data.arrayBuffer();
+        const buffer = await downloadBook(record.id);
         const zip = await JSZip.loadAsync(buffer);
 
         const opfPath = book.paths?.opf;
@@ -131,7 +125,7 @@ export default function BookReaderModal({ book, visible, onClose }) {
     return () => {
       cancelled = true;
     };
-  }, [visible, book, getBookRecord, loadProgress]);
+  }, [visible, book, getBookRecord, loadProgress, updateProgress]);
 
   const currentChapter = useMemo(
     () => (chapters.length ? chapters[currentIndex] : null),
