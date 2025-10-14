@@ -18,7 +18,11 @@ import { useLibrary } from "../lib/library-context";
 export default function GroupsScreen() {
   const { library } = useLibrary();
   const [myGroups, setMyGroups] = useState([]);
+  const [showBrowse, setShowBrowse] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showJoinButton, setShowJoinButton] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
   const [groupName, setGroupName] = useState("");
   const [vibeTags, setVibeTags] = useState("");
   const [maxMembers, setMaxMembers] = useState("10");
@@ -53,26 +57,45 @@ export default function GroupsScreen() {
     setInvitees("");
   };
 
-  const handleJoinGroup = (group) => {
-    if (myGroups.some((g) => g.id === group.id)) {
-      Alert.alert("Already joined", `You're already in "${group.name}"`);
-      return;
-    }
-    setMyGroups([...myGroups, group]);
-    Alert.alert("Joined", `You joined "${group.name}"`);
+  const handleJoinGroupClick = (group) => {
+    setSelectedGroup(group);
+    setShowJoinButton(true);
+    setShowReadMore(false);
   };
 
+  const handleJoinGroup = () => {
+    if (myGroups.some((g) => g.id === selectedGroup.id)) {
+      Alert.alert("Already joined", `You're already in "${selectedGroup.name}"`);
+      setSelectedGroup(null);
+      return;
+    }
+    setMyGroups([...myGroups, selectedGroup]);
+    setSelectedGroup(null);
+    Alert.alert("Joined", `You joined "${selectedGroup.name}"`);
+  };
+
+  const handleOpenGroup = (group) => {
+    setSelectedGroup(group);
+    setShowJoinButton(false);
+    setShowReadMore(false);
+  };
+
+  const handleCloseGroup = () => {
+    setSelectedGroup(null);
+    setShowReadMore(false);
+    setShowJoinButton(false);
+  };
+
+  // Show groups related to books in library, or all groups if library is empty
   const suggestedGroups = allGroups.filter(
-    (group) =>
-      library.some((book) => book.title === group.relatedBook) &&
-      !myGroups.some((g) => g.id === group.id)
+    (group) => !myGroups.some((g) => g.id === group.id)
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.groupsHeader}>
         <Text style={styles.headerTitle}>
-          {myGroups.length ? "My Groups" : "Suggested Groups"}
+          {showBrowse ? "Browse Groups" : myGroups.length ? "My Groups" : "Suggested Groups"}
         </Text>
         <Pressable style={styles.button} onPress={() => setShowCreateModal(true)}>
           <Text style={styles.buttonLabel}>Create Group</Text>
@@ -80,7 +103,30 @@ export default function GroupsScreen() {
       </View>
 
       <ScrollView>
-        {myGroups.length > 0 ? (
+        {showBrowse ? (
+          <>
+            {suggestedGroups.map((group) => (
+              <View key={group.id} style={styles.groupCard}>
+                <Text style={styles.groupName}>{group.name}</Text>
+                <Text style={styles.groupBook}>
+                  Related to {group.relatedBook}
+                </Text>
+                <Pressable
+                  style={styles.button}
+                  onPress={() => handleJoinGroupClick(group)}
+                >
+                  <Text style={styles.buttonLabel}>Join Group</Text>
+                </Pressable>
+              </View>
+            ))}
+            <Pressable
+              style={[styles.button, styles.groupButton]}
+              onPress={() => setShowBrowse(false)}
+            >
+              <Text style={styles.buttonLabel}>Back to My Groups</Text>
+            </Pressable>
+          </>
+        ) : myGroups.length > 0 ? (
           <>
             {myGroups.map((group) => (
               <View key={group.id} style={styles.groupCard}>
@@ -93,9 +139,7 @@ export default function GroupsScreen() {
                 ) : null}
                 <Pressable
                   style={[styles.button, styles.groupButton]}
-                  onPress={() =>
-                    Alert.alert("Open Group", `Opening group: "${group.name}"`)
-                  }
+                  onPress={() => handleOpenGroup(group)}
                 >
                   <Text style={styles.buttonLabel}>Open Group</Text>
                 </Pressable>
@@ -103,9 +147,7 @@ export default function GroupsScreen() {
             ))}
             <Pressable
               style={[styles.button, styles.groupButton]}
-              onPress={() =>
-                Alert.alert("Browse Groups", "Navigate to Browse Groups screen")
-              }
+              onPress={() => setShowBrowse(true)}
             >
               <Text style={styles.buttonLabel}>Browse Groups</Text>
             </Pressable>
@@ -119,7 +161,7 @@ export default function GroupsScreen() {
               </Text>
               <Pressable
                 style={styles.button}
-                onPress={() => handleJoinGroup(group)}
+                onPress={() => handleJoinGroupClick(group)}
               >
                 <Text style={styles.buttonLabel}>Join Group</Text>
               </Pressable>
@@ -127,6 +169,99 @@ export default function GroupsScreen() {
           ))
         )}
       </ScrollView>
+
+      {/* Modal for viewing group details */}
+      <Modal
+        visible={!!selectedGroup}
+        animationType="slide"
+        transparent
+        onRequestClose={handleCloseGroup}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <ScrollView>
+              {/* Group Header */}
+              <View style={styles.groupDetailHeader}>
+                <View style={styles.groupProfilePic}>
+                  <Text style={styles.groupProfileInitial}>
+                    {selectedGroup?.name?.charAt(0) || "G"}
+                  </Text>
+                </View>
+                <View style={styles.groupDetailHeaderText}>
+                  <Text style={styles.headerTitle}>{selectedGroup?.name}</Text>
+                  <Text style={styles.groupDetailSubtext}>
+                    {selectedGroup?.isPublic ? "DISCUSSES ONLINE" : "PRIVATE GROUP"}
+                  </Text>
+                  <Text style={styles.groupDetailSubtext}>
+                    {selectedGroup?.maxMembers || 0} members
+                  </Text>
+                </View>
+                {showJoinButton && (
+                  <Pressable
+                    style={[styles.button, styles.joinButton]}
+                    onPress={handleJoinGroup}
+                  >
+                    <Text style={styles.buttonLabel}>JOIN</Text>
+                  </Pressable>
+                )}
+              </View>
+
+              {/* Currently Reading Section */}
+              <View style={styles.currentlyReadingSection}>
+                <Text style={styles.sectionTitle}>CURRENTLY READING</Text>
+                <View style={styles.bookDetailRow}>
+                  <View style={styles.bookCoverPlaceholder}>
+                    <Text style={styles.placeholderText}>Book Cover</Text>
+                  </View>
+                  <View style={styles.bookDetailInfo}>
+                    <Text style={styles.bookDetailTitle}>
+                      About {selectedGroup?.name}
+                    </Text>
+                    <Text style={styles.bookDetailDescription}>
+                      Welcome to {selectedGroup?.name}! We hope you're ready for some great reads and invigorating discussions!
+                      {"\n\n"}
+                      Our focus is to highlight exceptional books from all different genres.
+                      {showReadMore && (
+                        <>
+                          {"\n\n"}
+                          This book club operates through messages where we share our favorite reads and discuss them together. Join us to connect with fellow readers!
+                        </>
+                      )}
+                    </Text>
+                    <Pressable onPress={() => setShowReadMore(!showReadMore)}>
+                      <Text style={styles.showMoreLink}>
+                        {showReadMore ? "Show less" : "Show more"}
+                      </Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.groupDetailFooter}>
+                <Text style={styles.stayConnectedText}>
+                  Stay connected with {selectedGroup?.name}
+                </Text>
+              </View>
+            </ScrollView>
+
+            {!showJoinButton && (
+              <Pressable
+                style={[styles.button, styles.openChatButton]}
+                onPress={() => Alert.alert("Open Chat", `Opening chat for "${selectedGroup?.name}"`)}
+              >
+                <Text style={styles.buttonLabel}>Open Chat</Text>
+              </Pressable>
+            )}
+
+            <Pressable
+              style={[styles.button, styles.buttonMuted, styles.modalCloseButton]}
+              onPress={handleCloseGroup}
+            >
+              <Text style={styles.buttonLabel}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
 
       {/* Modal for creating groups */}
       <Modal

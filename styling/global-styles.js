@@ -259,4 +259,128 @@ goButtonArrow: {
   fontSize: 18,
   fontWeight: '600',
 },
+// Add these styles to your global-styles.js file
+
+groupDetailHeader: {
+  flexDirection: "row",
+  alignItems: "center",
+  padding: 20,
+  borderBottomWidth: 1,
+  borderBottomColor: "#e0e0e0",
+  gap: 15,
+},
+
+groupProfilePic: {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  backgroundColor: "#4A90E2",
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+groupProfileInitial: {
+  fontSize: 32,
+  fontWeight: "bold",
+  color: "#fff",
+},
+
+groupDetailHeaderText: {
+  flex: 1,
+},
+
+groupDetailSubtext: {
+  fontSize: 12,
+  color: "#666",
+  marginTop: 4,
+},
+
+joinButton: {
+  backgroundColor: "#E25822",
+  paddingHorizontal: 30,
+  paddingVertical: 12,
+  borderRadius: 25,
+},
+
+currentlyReadingSection: {
+  padding: 20,
+  backgroundColor: "#f5f5f5",
+},
+
+sectionTitle: {
+  fontSize: 14,
+  fontWeight: "600",
+  letterSpacing: 1,
+  color: "#333",
+  marginBottom: 15,
+},
+
+bookDetailRow: {
+  flexDirection: "row",
+  gap: 15,
+  backgroundColor: "#fff",
+  padding: 15,
+  borderRadius: 8,
+},
+
+bookCoverPlaceholder: {
+  width: 120,
+  height: 180,
+  backgroundColor: "#e0e0e0",
+  borderRadius: 4,
+  justifyContent: "center",
+  alignItems: "center",
+},
+
+placeholderText: {
+  color: "#999",
+  fontSize: 12,
+},
+
+bookDetailInfo: {
+  flex: 1,
+},
+
+bookDetailTitle: {
+  fontSize: 18,
+  fontWeight: "600",
+  marginBottom: 10,
+  color: "#333",
+},
+
+bookDetailDescription: {
+  fontSize: 14,
+  lineHeight: 20,
+  color: "#666",
+  marginBottom: 8,
+},
+
+showMoreLink: {
+  fontSize: 14,
+  color: "#4A90E2",
+  textDecorationLine: "underline",
+  marginTop: 5,
+},
+
+groupDetailFooter: {
+  padding: 20,
+  alignItems: "center",
+},
+
+stayConnectedText: {
+  fontSize: 16,
+  fontWeight: "500",
+  color: "#333",
+},
+
+modalCloseButton: {
+  marginTop: 10,
+},
+
+openChatButton: {
+  backgroundColor: "#4A90E2",
+  marginTop: 10,
+  marginBottom: 5,
+},
+
 });
