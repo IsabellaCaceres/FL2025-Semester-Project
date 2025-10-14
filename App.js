@@ -30,8 +30,11 @@ export default function App() {
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState(DEFAULT_AUTH_STATUS);
+  const [submittingAction, setSubmittingAction] = useState(null);
+  const [showReset, setShowReset] = useState(false);
+  const [resetCurrentPassword, setResetCurrentPassword] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
 
   const displayName =
     user?.user_metadata?.username ?? user?.email ?? user?.user_metadata?.full_name ?? null;
@@ -71,83 +74,179 @@ export default function App() {
   const buildAuthEmail = (rawUsername) =>
     `${rawUsername.toLowerCase()}@local.goodreads-demo`;
 
-  const handleSubmit = async () => {
-    const trimmedUsername = username.trim();
-    if (!trimmedUsername || !password) {
-      setStatusMessage("Enter both username and password.");
+  const normalizeUsernameInput = () => {
+    const trimmed = username.trim();
+    if (!trimmed) {
+      setStatusMessage("Enter a username first.");
+      return null;
+    }
+    const normalized = trimmed.toLowerCase().replace(/\s+/g, "");
+    if (!/^[a-z0-9._-]+$/.test(normalized)) {
+      setStatusMessage("Use letters, numbers, dots, underscores, or dashes in your username.");
+      return null;
+    }
+    if (normalized !== username) setUsername(normalized);
+    return normalized;
+  };
+
+  const handleSignIn = async () => {
+    if (submittingAction) return;
+    const normalized = normalizeUsernameInput();
+    if (!normalized) return;
+    if (!password) {
+      setStatusMessage("Enter your password to sign in.");
       return;
     }
-    const normalizedUsername = trimmedUsername.toLowerCase().replace(/\s+/g, "");
-    setUsername(normalizedUsername);
-    if (!/^[a-z0-9._-]+$/.test(normalizedUsername)) {
-      setStatusMessage("Use letters, numbers, dots, underscores, or dashes in your username.");
+    const emailForAuth = buildAuthEmail(normalized);
+    setSubmittingAction("signIn");
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: emailForAuth,
+        password,
+      });
+      if (error) {
+        const lower = (error.message || "").toLowerCase();
+        if (lower.includes("invalid login credentials")) {
+          setStatusMessage("Incorrect username or password. Try again or use Sign Up.");
+        } else {
+          setStatusMessage(error.message || "Sign in error.");
+        }
+        return;
+      }
+      setStatusMessage(`Welcome back, ${normalized}!`);
+      if (data?.user?.user_metadata?.username !== normalized) {
+        await supabase.auth.updateUser({ data: { username: normalized } });
+      }
+      setPassword("");
+    } catch (error) {
+      console.error("Sign in error:", error);
+      setStatusMessage("Unable to sign in. Is Supabase running?");
+    } finally {
+      setSubmittingAction(null);
+    }
+  };
+
+  const handleSignUp = async () => {
+    if (submittingAction) return;
+    const normalized = normalizeUsernameInput();
+    if (!normalized) return;
+    if (!password) {
+      setStatusMessage("Choose a password to create your account.");
       return;
     }
     if (password.length < 6) {
       setStatusMessage("Password must be at least 6 characters long.");
       return;
     }
-    setSubmitting(true);
-    setStatusMessage("");
-
-    const emailForAuth = buildAuthEmail(normalizedUsername);
-
+    const emailForAuth = buildAuthEmail(normalized);
+    setSubmittingAction("signUp");
     try {
-      const { data: signInData, error: signInError } =
-        await supabase.auth.signInWithPassword({
-          email: emailForAuth,
-          password,
-        });
-
-      if (!signInError) {
-        setStatusMessage(`Welcome back, ${normalizedUsername}!`);
-        if (signInData?.user?.user_metadata?.username !== normalizedUsername) {
-          await supabase.auth.updateUser({
-            data: { username: normalizedUsername },
-          });
-        }
-        return;
-      }
-
-      const lowerMessage = (signInError.message || "").toLowerCase();
-
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: emailForAuth,
         password,
-        options: { data: { username: normalizedUsername } },
+        options: { data: { username: normalized } },
       });
-
-      if (signUpError) {
-        if (
-          signUpError.code === "user_already_exists" ||
-          lowerMessage.includes("invalid login credentials") ||
-          lowerMessage.includes("password")
-        ) {
-          setStatusMessage("That username exists, but the password is incorrect.");
-          return;
+      if (error) {
+        const lower = (error.message || "").toLowerCase();
+        if (error.code === "user_already_exists" || lower.includes("already") || lower.includes("exists")) {
+          setStatusMessage("That username is already taken. Use Sign In instead.");
+        } else {
+          setStatusMessage(error.message || "Sign up error.");
         }
-        setStatusMessage(signUpError.message || "Sign up error.");
         return;
       }
-
-      if (!signUpData.session) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
+      let session = data.session;
+      if (!session) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
           email: emailForAuth,
           password,
         });
         if (signInError) {
-          setStatusMessage(signInError.message || "Sign in error.");
+          setStatusMessage("Account created, but automatic sign-in failed. Try signing in now.");
           return;
         }
+        session = signInData.session;
       }
-      setStatusMessage(`Account created. Welcome, ${normalizedUsername}!`);
+      if (session?.user?.user_metadata?.username !== normalized) {
+        await supabase.auth.updateUser({ data: { username: normalized } });
+      }
+      setStatusMessage(`Account created. You're signed in as ${normalized}.`);
+      setPassword("");
     } catch (error) {
-      console.error("Auth error:", error);
-      setStatusMessage(
-        "We could not reach Supabase. Make sure the local stack is running and try again."
-      );
+      console.error("Sign up error:", error);
+      setStatusMessage("Unable to sign up. Is Supabase running?");
     } finally {
-      setSubmitting(false);
+      setSubmittingAction(null);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (submittingAction) return;
+    const normalized = normalizeUsernameInput();
+    if (!normalized) return;
+    if (!resetCurrentPassword) {
+      setStatusMessage("Enter your current password first.");
+      return;
+    }
+    if (!resetNewPassword) {
+      setStatusMessage("Enter a new password.");
+      return;
+    }
+    if (resetNewPassword.length < 6) {
+      setStatusMessage("New password must be at least 6 characters long.");
+      return;
+    }
+    if (resetNewPassword === resetCurrentPassword) {
+      setStatusMessage("New password must be different from the current password.");
+      return;
+    }
+    const emailForAuth = buildAuthEmail(normalized);
+    setSubmittingAction("reset");
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: emailForAuth,
+        password: resetCurrentPassword,
+      });
+      if (signInError) {
+        const lower = (signInError.message || "").toLowerCase();
+        setStatusMessage(
+          lower.includes("invalid") || lower.includes("password")
+            ? "Current password is incorrect."
+            : signInError.message || "Unable to verify current password."
+        );
+        return;
+      }
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: resetNewPassword,
+      });
+      if (updateError) {
+        setStatusMessage(updateError.message || "Could not update password.");
+        return;
+      }
+      setStatusMessage("Password updated. Use your new password next time you sign in.");
+      setResetCurrentPassword("");
+      setResetNewPassword("");
+      setShowReset(false);
+      setPassword("");
+    } catch (error) {
+      console.error("Reset password error:", error);
+      setStatusMessage("Unable to reset password right now.");
+    } finally {
+      setSubmittingAction(null);
+    }
+  };
+
+  const toggleReset = () => {
+    const next = !showReset;
+    setShowReset(next);
+    setStatusMessage(
+      next
+        ? "Enter your username, current password, and a new password."
+        : DEFAULT_AUTH_STATUS
+    );
+    if (!next) {
+      setResetCurrentPassword("");
+      setResetNewPassword("");
     }
   };
 
@@ -158,6 +257,10 @@ export default function App() {
       setUser(null);
       setUsername("");
       setPassword("");
+      setShowReset(false);
+      setResetCurrentPassword("");
+      setResetNewPassword("");
+      setSubmittingAction(null);
       setStatusMessage(DEFAULT_AUTH_STATUS);
     }
   };
@@ -197,17 +300,83 @@ export default function App() {
             }}
             placeholderTextColor="#999"
           />
-          <Pressable
-            style={[styles.button, submitting && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={submitting}
-          >
-            {submitting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonLabel}>Sign In / Sign Up</Text>
-            )}
+          <View style={styles.authActionRow}>
+            <Pressable
+              style={[
+                styles.button,
+                styles.authActionButton,
+                submittingAction && styles.buttonDisabled,
+              ]}
+              onPress={handleSignIn}
+              disabled={!!submittingAction}
+            >
+              {submittingAction === "signIn" ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonLabel}>Sign In</Text>
+              )}
+            </Pressable>
+            <Pressable
+              style={[
+                styles.button,
+                styles.authActionButton,
+                submittingAction && styles.buttonDisabled,
+              ]}
+              onPress={handleSignUp}
+              disabled={!!submittingAction}
+            >
+              {submittingAction === "signUp" ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonLabel}>Sign Up</Text>
+              )}
+            </Pressable>
+          </View>
+          <Pressable style={styles.linkButton} onPress={toggleReset}>
+            <Text style={styles.linkButtonLabel}>
+              {showReset ? "Cancel password reset" : "Reset password"}
+            </Text>
           </Pressable>
+          {showReset ? (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Current password"
+                secureTextEntry
+                value={resetCurrentPassword}
+                onChangeText={(value) => {
+                  setResetCurrentPassword(value);
+                  setStatusMessage("Enter your username, current password, and a new password.");
+                }}
+                placeholderTextColor="#999"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="New password"
+                secureTextEntry
+                value={resetNewPassword}
+                onChangeText={(value) => {
+                  setResetNewPassword(value);
+                  setStatusMessage("Enter your username, current password, and a new password.");
+                }}
+                placeholderTextColor="#999"
+              />
+              <Pressable
+                style={[
+                  styles.button,
+                  submittingAction && styles.buttonDisabled,
+                ]}
+                onPress={handleResetPassword}
+                disabled={!!submittingAction}
+              >
+                {submittingAction === "reset" ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonLabel}>Update Password</Text>
+                )}
+              </Pressable>
+            </>
+          ) : null}
           {statusMessage ? (
             <Text style={styles.formStatus}>{statusMessage}</Text>
           ) : null}
