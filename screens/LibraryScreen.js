@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
 import { useLibrary } from "../lib/library-context";
+import BookModal from "../components/BookModal";
 
 export default function LibraryScreen() {
   const { library, allBooks, isLoading } = useLibrary();
@@ -22,6 +23,7 @@ export default function LibraryScreen() {
   const [newListName, setNewListName] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooks, setSelectedBooks] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const filteredBooks = allBooks.filter((book) =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -54,6 +56,8 @@ export default function LibraryScreen() {
     setShowCreateListModal(false);
   };
 
+  const handleBookPress = (book) => setSelectedBook(book);
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Tabs */}
@@ -85,16 +89,18 @@ export default function LibraryScreen() {
               <Text style={styles.searchEmpty}>Syncing your library…</Text>
             ) : library.length ? (
               library.map((book) => (
-                <View key={book.id} style={styles.bookCard}>
-                  <Image
-                    source={book.coverSource ?? book.cover ?? undefined}
-                    style={styles.bookCover}
-                    resizeMode="cover"
-                  />
-                  <Text style={styles.bookTitle} numberOfLines={2}>
-                    {book.title}
-                  </Text>
-                </View>
+                <Pressable key={book.id} onPress={() => handleBookPress(book)}>
+                  <View style={styles.bookCard}>
+                    <Image
+                      source={book.coverSource ?? book.cover ?? undefined}
+                      style={styles.bookCover}
+                      resizeMode="cover"
+                    />
+                    <Text style={styles.bookTitle} numberOfLines={2}>
+                      {book.title}
+                    </Text>
+                  </View>
+                </Pressable>
               ))
             ) : (
               <Text style={styles.searchEmpty}>
@@ -115,16 +121,18 @@ export default function LibraryScreen() {
               <Text style={styles.groupName}>{list.name}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {list.books.map((book, index) => (
-                  <View key={index} style={styles.bookCard}>
-                    <Image
-                      source={book.cover}
-                      style={styles.bookCover}
-                      resizeMode="cover"
-                    />
-                    <Text style={styles.bookTitle} numberOfLines={2}>
-                      {book.title}
-                    </Text>
-                  </View>
+                  <Pressable key={index} onPress={() => handleBookPress(book)}>
+                    <View style={styles.bookCard}>
+                      <Image
+                        source={book.cover}
+                        style={styles.bookCover}
+                        resizeMode="cover"
+                      />
+                      <Text style={styles.bookTitle} numberOfLines={2}>
+                        {book.title}
+                      </Text>
+                    </View>
+                  </Pressable>
                 ))}
               </ScrollView>
             </View>
@@ -192,6 +200,13 @@ export default function LibraryScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Book Modal */}
+      <BookModal
+        visible={!!selectedBook}
+        book={selectedBook}
+        onClose={() => setSelectedBook(null)}
+      />
     </SafeAreaView>
   );
 }
