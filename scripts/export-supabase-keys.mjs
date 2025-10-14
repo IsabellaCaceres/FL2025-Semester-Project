@@ -64,18 +64,55 @@ if (!anon) {
   process.exit(1)
 }
 
-const lines = [
-  `EXPO_PUBLIC_SUPABASE_URL=${url}`,
-  `EXPO_PUBLIC_SUPABASE_ANON_KEY=${anon}`,
-]
+let existingContent = ''
+try {
+  existingContent = await readFile(envPath, 'utf8')
+} catch {}
+
+const existingLines = existingContent ? existingContent.split(/\r?\n/) : []
+const envFromFile = new Map()
+
+for (const line of existingLines) {
+  const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/)
+  if (match) {
+    envFromFile.set(match[1], match[2])
+  }
+}
+
+if (!service && envFromFile.has('SUPABASE_SERVICE_ROLE_KEY')) {
+  service = envFromFile.get('SUPABASE_SERVICE_ROLE_KEY')
+}
+
+const updates = new Map([
+  ['EXPO_PUBLIC_SUPABASE_URL', url],
+  ['EXPO_PUBLIC_SUPABASE_ANON_KEY', anon],
+])
 
 if (service) {
-  lines.push(`SUPABASE_SERVICE_ROLE_KEY=${service}`)
+  updates.set('SUPABASE_SERVICE_ROLE_KEY', service)
 } else {
   console.warn('Warning: Could not find service_role key. Some scripts (e.g. supabase:sync-epubs) need it.')
 }
 
-const content = `${lines.join('\n')}\n`
+const mergedLines = []
+
+for (const line of existingLines) {
+  const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/)
+  if (match) {
+    const key = match[1]
+    if (updates.has(key)) {
+      mergedLines.push(`${key}=${updates.get(key)}`)
+      updates.delete(key)
+      continue
+    }
+  }
+  mergedLines.push(line)
+}
+
+for (const [key, value] of updates) {
+  mergedLines.push(`${key}=${value}`)
+}
+
+const content = `${mergedLines.join('\n').replace(/\n*$/, '')}\n`
 await writeFile(envPath, content, 'utf8')
 console.log('Wrote .env with Supabase URL, anon key, and service role key (if available)')
-
