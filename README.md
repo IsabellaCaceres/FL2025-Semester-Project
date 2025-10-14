@@ -79,3 +79,23 @@ We plan to use local storage for our database and React Native + Expo for the fr
    ```bash
    bun expo start
    ```
+
+
+# If running into Windows error where supabase command is nonfunctional, install supabase globally:
+1. **In powershell (can be done anywhere):**
+irm get.scoop.sh | iex
+scoop install supabase
+
+2. **Now cd to project:**
+supabase start
+
+3. **If Anon key doesn't generate, run:**
+supabase status -o json
+
+4. **Find "ANON_KEY" in the output, paste to .env file**
+Syntax:
+EXPO_PUBLIC_SUPABASE_URL=http://XXX.X.X.X:XXXXX
+EXPO_PUBLIC_SUPABASE_ANON_KEY={the anon key}
+
+5. **Then run:**
+bun run expo start
