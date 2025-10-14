@@ -49,7 +49,7 @@ We plan to use local storage for our database and React Native + Expo for the fr
 2. **Read epub files**
 
    ```bash
-   npm run generate:epubs
+   bun run generate:epubs
    ```
 
 3. **Start Supabase**
