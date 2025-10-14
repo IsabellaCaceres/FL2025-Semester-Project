@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, Pressable, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../styling/global-styles";
 import BookModal from "../components/BookModal";
 import { useLibrary } from "../lib/library-context";
@@ -9,6 +10,7 @@ import { useLibrary } from "../lib/library-context";
 export default function HomeScreen() {
   const { library, recommended, isLoading } = useLibrary();
   const [selectedBook, setSelectedBook] = useState(null);
+  const navigation = useNavigation();
 
   const handleBookPress = (book) => setSelectedBook(book);
 
@@ -17,12 +19,6 @@ export default function HomeScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Goodreads2</Text>
-          <Pressable
-            style={styles.browseButton}
-            onPress={() => console.log("Browse pressed")}
-          >
-            <Text style={styles.browseText}>Browse</Text>
-          </Pressable>
         </View>
 
         {/* Library Section */}
@@ -57,9 +53,9 @@ export default function HomeScreen() {
         {/* Recommendations */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Recommended for You</Text>
-          <View style={styles.recommendationsGrid}>
-            {recommended.length ? (
-              recommended.map((item) => (
+          {recommended.length ? (
+            <View style={styles.recommendationsGrid}>
+              {recommended.map((item) => (
                 <Pressable key={item.id} onPress={() => handleBookPress(item)}>
                   <View style={styles.bookCard}>
                     <Image
@@ -72,13 +68,25 @@ export default function HomeScreen() {
                     </Text>
                   </View>
                 </Pressable>
-              ))
-            ) : (
-              <Text style={styles.searchEmpty}>
-                Add a few books to your library to see personalized picks here.
+              ))}
+            </View>
+          ) : (
+            <View style={styles.emptyRecommendationsContainer}>
+              <Text style={styles.emptyRecommendationsText}>
+                To view our recommendations, add books to your library
               </Text>
-            )}
-          </View>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.goButton,
+                  pressed && styles.goButtonPressed,
+                ]}
+                onPress={() => navigation.navigate("Search")}
+              >
+                <Text style={styles.goButtonText}>Go</Text>
+                <Text style={styles.goButtonArrow}>→</Text>
+              </Pressable>
+            </View>
+          )}
         </View>
       </ScrollView>
 

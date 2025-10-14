@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import styles from "./styling/global-styles";
+import { theme } from "./styling/theme";
+import { supabase } from "./lib/supabase";
 import { LibraryProvider } from "./lib/library-context";
 import {
   fetchCurrentUser,
@@ -19,6 +21,12 @@ import HomeScreen from "./screens/HomeScreen";
 import LibraryScreen from "./screens/LibraryScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import SearchScreen from "./screens/SearchScreen";
+
+//Icons
+import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
+import { Feather } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();
 const DEFAULT_AUTH_STATUS =
@@ -295,7 +303,66 @@ export default function App() {
   return (
     <LibraryProvider user={user}>
       <NavigationContainer>
-        <Tab.Navigator>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            //Header Styling
+            headerStyle: {
+              backgroundColor: theme.colors.teal,
+            },
+            headerTitleStyle: {
+              fontSize: theme.fontSizes.lg,
+              fontWeight: theme.fontWeight.bold,
+              color: theme.colors.offwhite,
+            },
+            headerTintColor: theme.colors.offwhite,
+            headerTitleAlign: "center",
+
+            // Tab Styling
+            tabBarStyle: styles.navigation.tabBar,
+            tabBarLabelStyle: styles.navigation.tabBarLabel,
+            tabBarActiveTintColor: styles.navigation.tabBarLabelActive.color,
+            tabBarInactiveTintColor: styles.navigation.tabBarLabelInactive.color,
+            tabBarIcon: ({ focused, color, size }) => {
+              let IconComponent;
+              let iconName;
+
+              switch (route.name) {
+                case "Home":
+                  IconComponent = Ionicons;
+                  iconName = "home";
+                  break;
+                case "Library":
+                  IconComponent = FontAwesome;
+                  iconName = "book";
+                  break;
+                case "Search":
+                  IconComponent = Feather;
+                  iconName = "search";
+                  break;
+                case "My Groups":
+                  IconComponent = MaterialIcons;
+                  iconName = "chat";
+                  break;
+                case "Account":
+                  IconComponent = FontAwesome;
+                  iconName = "user";
+                  break;
+                default:
+                  return null;
+              }
+
+              return (
+                <View style={styles.navigation.tabBarIconContainer}>
+                  <IconComponent
+                    name={iconName}
+                    size={size}
+                    color={focused ? styles.navigation.tabBarIconActive.tintColor : styles.navigation.tabBarIconInactive.tintColor}
+                  />
+                </View>
+              );
+            },
+          })}
+        >
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
           <Tab.Screen name="Search" component={SearchScreen} />
@@ -312,6 +379,7 @@ export default function App() {
             )}
           </Tab.Screen>
         </Tab.Navigator>
+
         <StatusBar style="auto" />
       </NavigationContainer>
     </LibraryProvider>
