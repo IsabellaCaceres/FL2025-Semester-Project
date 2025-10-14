@@ -13,6 +13,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import styles from "./styling/global-styles";
 import { supabase } from "./lib/supabase";
+import { LibraryProvider } from "./lib/library-context";
 
 // Screens
 import HomeScreen from "./screens/HomeScreen";
@@ -21,27 +22,41 @@ import GroupsScreen from "./screens/GroupsScreen";
 import SearchScreen from "./screens/SearchScreen";
 
 const Tab = createBottomTabNavigator();
+const DEFAULT_AUTH_STATUS =
+  "Enter a username and password to sign in or create an account.";
 
 export default function App() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [userEmail, setUserEmail] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(DEFAULT_AUTH_STATUS);
+
+  const displayName =
+    user?.user_metadata?.username ?? user?.email ?? user?.user_metadata?.full_name ?? null;
 
   useEffect(() => {
     const init = async () => {
       const { data, error } = await supabase.auth.getUser();
       if (error) {
         console.warn("getUser error:", error.message);
+        const message = error.message?.toLowerCase() ?? "";
+        if (error.status === 403 || message.includes("sub claim")) {
+          try {
+            await supabase.auth.signOut();
+          } catch (signOutError) {
+            console.warn("signOut after getUser error failed:", signOutError.message);
+          }
+        }
       }
-      setUserEmail(data?.user?.email ?? null);
+      setUser(error ? null : data?.user ?? null);
       setLoading(false);
     };
     init();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserEmail(session?.user?.email ?? null);
+      setUser(session?.user ?? null);
     });
 
     return () => {
@@ -53,51 +68,98 @@ export default function App() {
     };
   }, []);
 
+  const buildAuthEmail = (rawUsername) =>
+    `${rawUsername.toLowerCase()}@local.goodreads-demo`;
+
   const handleSubmit = async () => {
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail || !password) {
-      Alert.alert("Missing info", "Enter both email and password.");
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername || !password) {
+      setStatusMessage("Enter both username and password.");
+      return;
+    }
+    const normalizedUsername = trimmedUsername.toLowerCase().replace(/\s+/g, "");
+    setUsername(normalizedUsername);
+    if (!/^[a-z0-9._-]+$/.test(normalizedUsername)) {
+      setStatusMessage("Use letters, numbers, dots, underscores, or dashes in your username.");
+      return;
+    }
+    if (password.length < 6) {
+      setStatusMessage("Password must be at least 6 characters long.");
       return;
     }
     setSubmitting(true);
+    setStatusMessage("");
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email: trimmedEmail,
-      password,
-    });
+    const emailForAuth = buildAuthEmail(normalizedUsername);
 
-    if (signUpError) {
-      const message = (signUpError.message || "").toLowerCase();
-      if (
-        signUpError.code === "user_already_exists" ||
-        message.includes("already") ||
-        message.includes("exists")
-      ) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
+    try {
+      const { data: signInData, error: signInError } =
+        await supabase.auth.signInWithPassword({
+          email: emailForAuth,
           password,
         });
-        if (signInError) Alert.alert("Sign in error", signInError.message);
-      } else {
-        Alert.alert("Sign up error", signUpError.message);
-      }
-      setSubmitting(false);
-      return;
-    }
 
-    if (!data.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
+      if (!signInError) {
+        setStatusMessage(`Welcome back, ${normalizedUsername}!`);
+        if (signInData?.user?.user_metadata?.username !== normalizedUsername) {
+          await supabase.auth.updateUser({
+            data: { username: normalizedUsername },
+          });
+        }
+        return;
+      }
+
+      const lowerMessage = (signInError.message || "").toLowerCase();
+
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: emailForAuth,
         password,
+        options: { data: { username: normalizedUsername } },
       });
-      if (signInError) Alert.alert("Sign in error", signInError.message);
+
+      if (signUpError) {
+        if (
+          signUpError.code === "user_already_exists" ||
+          lowerMessage.includes("invalid login credentials") ||
+          lowerMessage.includes("password")
+        ) {
+          setStatusMessage("That username exists, but the password is incorrect.");
+          return;
+        }
+        setStatusMessage(signUpError.message || "Sign up error.");
+        return;
+      }
+
+      if (!signUpData.session) {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: emailForAuth,
+          password,
+        });
+        if (signInError) {
+          setStatusMessage(signInError.message || "Sign in error.");
+          return;
+        }
+      }
+      setStatusMessage(`Account created. Welcome, ${normalizedUsername}!`);
+    } catch (error) {
+      console.error("Auth error:", error);
+      setStatusMessage(
+        "We could not reach Supabase. Make sure the local stack is running and try again."
+      );
+    } finally {
+      setSubmitting(false);
     }
-    setSubmitting(false);
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) Alert.alert("Sign out error", error.message);
+    else {
+      setUser(null);
+      setUsername("");
+      setPassword("");
+      setStatusMessage(DEFAULT_AUTH_STATUS);
+    }
   };
 
   if (loading) {
@@ -108,18 +170,20 @@ export default function App() {
     );
   }
 
-  if (!userEmail) {
+  if (!user) {
     return (
       <View style={styles.container}>
         <View style={styles.form}>
           <Text style={styles.title}>Welcome</Text>
           <TextInput
             style={styles.input}
-            placeholder="Email"
+            placeholder="Username"
             autoCapitalize="none"
-            keyboardType="email-address"
-            value={email}
-            onChangeText={setEmail}
+            value={username}
+            onChangeText={(value) => {
+              setUsername(value);
+              setStatusMessage(DEFAULT_AUTH_STATUS);
+            }}
             placeholderTextColor="#999"
           />
           <TextInput
@@ -127,7 +191,10 @@ export default function App() {
             placeholder="Password"
             secureTextEntry
             value={password}
-            onChangeText={setPassword}
+            onChangeText={(value) => {
+              setPassword(value);
+              setStatusMessage(DEFAULT_AUTH_STATUS);
+            }}
             placeholderTextColor="#999"
           />
           <Pressable
@@ -138,9 +205,12 @@ export default function App() {
             {submitting ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.buttonLabel}>Sign up</Text>
+              <Text style={styles.buttonLabel}>Sign In / Sign Up</Text>
             )}
           </Pressable>
+          {statusMessage ? (
+            <Text style={styles.formStatus}>{statusMessage}</Text>
+          ) : null}
         </View>
         <StatusBar style="auto" />
       </View>
@@ -148,25 +218,27 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <Tab.Navigator>
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Library" component={LibraryScreen} />
-        <Tab.Screen name="Search" component={SearchScreen} />
-        <Tab.Screen name="My Groups" component={GroupsScreen} />
-        <Tab.Screen name="Account">
-          {() => (
-            <View style={styles.center}>
-              <Text style={styles.hero}>Signed in as</Text>
-              <Text style={styles.subtitle}>{userEmail}</Text>
-              <Pressable style={styles.button} onPress={signOut}>
-                <Text style={styles.buttonLabel}>Sign out</Text>
-              </Pressable>
-            </View>
-          )}
-        </Tab.Screen>
-      </Tab.Navigator>
-      <StatusBar style="auto" />
-    </NavigationContainer>
+    <LibraryProvider user={user}>
+      <NavigationContainer>
+        <Tab.Navigator>
+          <Tab.Screen name="Home" component={HomeScreen} />
+          <Tab.Screen name="Library" component={LibraryScreen} />
+          <Tab.Screen name="Search" component={SearchScreen} />
+          <Tab.Screen name="My Groups" component={GroupsScreen} />
+          <Tab.Screen name="Account">
+            {() => (
+              <View style={styles.center}>
+                <Text style={styles.hero}>Signed in as</Text>
+                <Text style={styles.subtitle}>{displayName}</Text>
+                <Pressable style={styles.button} onPress={signOut}>
+                  <Text style={styles.buttonLabel}>Sign out</Text>
+                </Pressable>
+              </View>
+            )}
+          </Tab.Screen>
+        </Tab.Navigator>
+        <StatusBar style="auto" />
+      </NavigationContainer>
+    </LibraryProvider>
   );
 }

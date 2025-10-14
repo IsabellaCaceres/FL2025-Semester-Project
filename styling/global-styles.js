@@ -8,6 +8,7 @@ export default StyleSheet.create({
   title: { fontSize: 22, fontWeight: "600", marginBottom: 16, textAlign: "center" },
   hero: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
   subtitle: { fontSize: 16, color: "#666", textAlign: "center" },
+  formStatus: { textAlign: "center", color: "#555", marginTop: 8 },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
@@ -174,6 +175,16 @@ export default StyleSheet.create({
   },
   searchButtonText: { color: "#fff", fontWeight: "600" },
   searchResults: { marginTop: 20 },
+  searchActiveFilter: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+    paddingHorizontal: 4,
+  },
+  searchActiveLabel: { fontWeight: "600" },
+  searchClearButton: { paddingHorizontal: 8, paddingVertical: 4 },
+  searchClearText: { color: "#007AFF", fontWeight: "600" },
   searchResultCard: {
     padding: 12,
     marginBottom: 10,
@@ -184,6 +195,9 @@ export default StyleSheet.create({
   },
   searchResultTitle: { fontWeight: "600", fontSize: 16 },
   searchResultAuthor: { color: "#555", marginTop: 4 },
+  searchResultSummary: { color: "#444", marginTop: 6, fontSize: 14 },
+  searchResultMeta: { color: "#666", marginTop: 6, fontSize: 12 },
+  searchResultButton: { marginTop: 10 },
   searchEmpty: { textAlign: "center", marginTop: 20, color: "#777" },
   genreGrid: {
     flexDirection: "row",
@@ -201,11 +215,7 @@ export default StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
   genreLabel: { fontWeight: "600", textAlign: "center", fontSize: 14 },
+  genreCardActive: { borderColor: "#000", backgroundColor: "#e8f0ff" },
 });

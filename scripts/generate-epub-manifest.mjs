@@ -2,7 +2,8 @@
 
 import { promises as fs } from 'node:fs'
 import { existsSync } from 'node:fs'
-import { dirname, relative, resolve } from 'node:path'
+import { createHash } from 'node:crypto'
+import { basename, dirname, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import JSZip from 'jszip'
 import { XMLParser } from 'fast-xml-parser'
@@ -22,6 +23,20 @@ function toArray(value) {
   if (Array.isArray(value)) return value
   if (value === undefined || value === null) return []
   return [value]
+}
+
+function cloneJSON(value) {
+  if (value === undefined) return undefined
+  const json = JSON.stringify(value)
+  if (json === undefined) return undefined
+  return JSON.parse(json)
+}
+
+function hasContent(value) {
+  if (value === undefined || value === null) return false
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === 'object') return Object.keys(value).length > 0
+  return true
 }
 
 function getText(node) {
@@ -88,6 +103,7 @@ async function writeManifest(filePath, entries) {
 
 async function extractEntry(filePath) {
   const buffer = await fs.readFile(filePath)
+  const contentHash = createHash('sha256').update(buffer).digest('hex')
   const zip = await JSZip.loadAsync(buffer)
 
   const containerEntry = zip.file('META-INF/container.xml')
@@ -155,9 +171,78 @@ async function extractEntry(filePath) {
   const coverBase64 = await coverEntry.async('base64')
   const coverUri = `data:${mediaType};base64,${coverBase64}`
 
-  const entry = { title: title.trim() }
+  const entry = {
+    id: contentHash,
+    contentHash,
+    title: title.trim(),
+  }
   if (author) entry.author = author.trim()
   entry.cover = { uri: coverUri }
+
+  const opfPackage = opf?.package ?? {}
+  const {
+    metadata: rawMetadata,
+    manifest: rawManifest,
+    spine: rawSpine,
+    guide: rawGuide,
+    collection: rawCollection,
+    bindings: rawBindings,
+    ...packageAttributes
+  } = opfPackage
+
+  const metadataDetails = cloneJSON(rawMetadata)
+  if (hasContent(metadataDetails)) entry.metadata = metadataDetails
+
+  const manifestItems = toArray(rawManifest?.item)
+    .map((item) => cloneJSON(item))
+    .filter(hasContent)
+  if (rawManifest || manifestItems.length > 0) {
+    let manifestData = cloneJSON(rawManifest) ?? {}
+    if (manifestData && Object.prototype.hasOwnProperty.call(manifestData, 'item')) {
+      delete manifestData.item
+    }
+    if (manifestItems.length > 0) manifestData.items = manifestItems
+    if (hasContent(manifestData)) entry.manifest = manifestData
+  }
+
+  const spineItemrefs = toArray(rawSpine?.itemref)
+    .map((itemref) => cloneJSON(itemref))
+    .filter(hasContent)
+  if (rawSpine || spineItemrefs.length > 0) {
+    let spineData = cloneJSON(rawSpine) ?? {}
+    if (spineData && Object.prototype.hasOwnProperty.call(spineData, 'itemref')) {
+      delete spineData.itemref
+    }
+    if (spineItemrefs.length > 0) spineData.itemrefs = spineItemrefs
+    if (hasContent(spineData)) entry.spine = spineData
+  }
+
+  const guideReferences = toArray(rawGuide?.reference)
+    .map((reference) => cloneJSON(reference))
+    .filter(hasContent)
+  if (rawGuide || guideReferences.length > 0) {
+    let guideData = cloneJSON(rawGuide) ?? {}
+    if (guideData && Object.prototype.hasOwnProperty.call(guideData, 'reference')) {
+      delete guideData.reference
+    }
+    if (guideReferences.length > 0) guideData.references = guideReferences
+    if (hasContent(guideData)) entry.guide = guideData
+  }
+
+  const collectionData = cloneJSON(rawCollection)
+  if (hasContent(collectionData)) entry.collection = collectionData
+
+  const bindingsData = cloneJSON(rawBindings)
+  if (hasContent(bindingsData)) entry.bindings = bindingsData
+
+  const packageInfo = cloneJSON(packageAttributes)
+  if (hasContent(packageInfo)) entry.package = packageInfo
+
+  entry.paths = { opf: opfPath }
+  entry.file = {
+    name: basename(filePath),
+    size: buffer.length,
+  }
 
   return entry
 }
@@ -185,6 +270,8 @@ export async function generateEpubManifest({ rootDir = defaultRootDir } = {}) {
 
     try {
       const entry = await extractEntry(fullPath)
+      if (!entry.paths) entry.paths = {}
+      entry.paths.epub = relPath
       entries.push(entry)
     } catch (error) {
       console.warn(

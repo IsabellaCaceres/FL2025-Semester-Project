@@ -11,8 +11,9 @@
     "supabase:start": "node ./scripts/supabase-cli.mjs start",
     "supabase:stop": "node ./scripts/supabase-cli.mjs stop",
     "supabase:status": "node ./scripts/supabase-cli.mjs status",
-    "supabase:reset": "node ./scripts/supabase-cli.mjs reset --no-confirm",
-    "supabase:keys": "node ./scripts/export-supabase-keys.mjs"
+    "supabase:reset": "node ./scripts/supabase-cli.mjs db reset --yes --local",
+    "supabase:keys": "node ./scripts/export-supabase-keys.mjs",
+    "supabase:sync-epubs": "node ./scripts/upload-epubs-to-supabase.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~6.1.1",

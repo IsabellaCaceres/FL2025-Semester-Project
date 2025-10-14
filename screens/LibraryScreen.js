@@ -12,9 +12,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
-import { libraryBooks, allBooks } from "../data/data";
+import { useLibrary } from "../lib/library-context";
 
 export default function LibraryScreen() {
+  const { library, allBooks, isLoading } = useLibrary();
   const [activeTab, setActiveTab] = useState("Library");
   const [lists, setLists] = useState([]);
   const [showCreateListModal, setShowCreateListModal] = useState(false);
@@ -27,8 +28,8 @@ export default function LibraryScreen() {
   );
 
   const toggleBookSelection = (book) => {
-    if (selectedBooks.some((b) => b.title === book.title)) {
-      setSelectedBooks(selectedBooks.filter((b) => b.title !== book.title));
+    if (selectedBooks.some((b) => b.id === book.id)) {
+      setSelectedBooks(selectedBooks.filter((b) => b.id !== book.id));
     } else {
       setSelectedBooks([...selectedBooks, book]);
     }
@@ -76,24 +77,32 @@ export default function LibraryScreen() {
             </Text>
           </Pressable>
         ))}
-      </View>
+        </View>
 
-      {activeTab === "Library" ? (
-        <ScrollView contentContainerStyle={styles.libraryGrid}>
-          {libraryBooks.map((book, index) => (
-            <View key={index} style={styles.bookCard}>
-              <Image
-                source={book.cover}
-                style={styles.bookCover}
-                resizeMode="cover"
-              />
-              <Text style={styles.bookTitle} numberOfLines={2}>
-                {book.title}
+        {activeTab === "Library" ? (
+          <ScrollView contentContainerStyle={styles.libraryGrid}>
+            {isLoading ? (
+              <Text style={styles.searchEmpty}>Syncing your library…</Text>
+            ) : library.length ? (
+              library.map((book) => (
+                <View key={book.id} style={styles.bookCard}>
+                  <Image
+                    source={book.coverSource ?? book.cover ?? undefined}
+                    style={styles.bookCover}
+                    resizeMode="cover"
+                  />
+                  <Text style={styles.bookTitle} numberOfLines={2}>
+                    {book.title}
+                  </Text>
+                </View>
+              ))
+            ) : (
+              <Text style={styles.searchEmpty}>
+                Your library is currently empty. Find a book you like in Search!
               </Text>
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
+            )}
+          </ScrollView>
+        ) : (
         <ScrollView>
           <Pressable
             style={[styles.button, styles.createListButton]}
@@ -146,19 +155,19 @@ export default function LibraryScreen() {
               onChangeText={setSearchQuery}
             />
             <ScrollView style={styles.modalScroll}>
-              {filteredBooks.map((book, index) => (
+              {filteredBooks.map((book) => (
                 <Pressable
-                  key={index}
+                  key={book.id}
                   style={[
                     styles.listItem,
-                    selectedBooks.some((b) => b.title === book.title)
+                    selectedBooks.some((b) => b.id === book.id)
                       ? styles.listItemSelected
                       : null,
                   ]}
                   onPress={() => toggleBookSelection(book)}
                 >
                   <Image
-                    source={book.cover}
+                    source={book.coverSource ?? book.cover ?? undefined}
                     style={styles.listItemImage}
                     resizeMode="cover"
                   />

@@ -12,9 +12,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/global-styles";
-import { libraryBooks, allGroups } from "../data/data";
+import { allGroups } from "../data/data";
+import { useLibrary } from "../lib/library-context";
 
 export default function GroupsScreen() {
+  const { library } = useLibrary();
   const [myGroups, setMyGroups] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [groupName, setGroupName] = useState("");
@@ -62,7 +64,7 @@ export default function GroupsScreen() {
 
   const suggestedGroups = allGroups.filter(
     (group) =>
-      libraryBooks.some((book) => book.title === group.relatedBook) &&
+      library.some((book) => book.title === group.relatedBook) &&
       !myGroups.some((g) => g.id === group.id)
   );
 
