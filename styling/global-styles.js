@@ -222,4 +222,41 @@ export default StyleSheet.create({
   },
   genreLabel: { fontWeight: "600", textAlign: "center", fontSize: 14 },
   genreCardActive: { borderColor: "#000", backgroundColor: "#e8f0ff" },
+  emptyRecommendationsContainer: {
+  backgroundColor: '#f5f5f5',
+  borderRadius: 12,
+  padding: 24,
+  alignItems: 'center',
+  marginTop: 8,
+},
+emptyRecommendationsText: {
+  fontSize: 16,
+  color: '#333',
+  textAlign: 'center',
+  marginBottom: 16,
+  lineHeight: 22,
+},
+goButton: {
+  backgroundColor: '#007AFF',
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 20,
+  gap: 8,
+},
+goButtonPressed: {
+  backgroundColor: '#0056b3',
+  opacity: 0.8,
+},
+goButtonText: {
+  color: '#fff',
+  fontSize: 16,
+  fontWeight: '600',
+},
+goButtonArrow: {
+  color: '#fff',
+  fontSize: 18,
+  fontWeight: '600',
+},
 });

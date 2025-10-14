@@ -8,13 +8,16 @@ export default function BookModal({ visible, book, onClose }) {
   const { addToLibrary, removeFromLibrary, isInLibrary } = useLibrary();
   const [readerOpen, setReaderOpen] = useState(false);
 
-  if (!visible || !book) return null;
-
   useEffect(() => {
     if (!visible) setReaderOpen(false);
   }, [visible, book?.id]);
 
-  const authors = book.authors.length
+  // Don't render anything if not visible or no book
+  if (!visible || !book) {
+    return null;
+  }
+
+  const authors = book.authors?.length
     ? book.authors.join(", ")
     : book.author || "Unknown author";
   const inLibrary = isInLibrary(book.id);
@@ -49,7 +52,7 @@ export default function BookModal({ visible, book, onClose }) {
               <Text style={styles.modalBlurb}>{book.summary}</Text>
             ) : null}
 
-            {book.genres.length ? (
+            {book.genres?.length ? (
               <Text style={styles.modalBlurb}>
                 {book.genres.join(" • ")}
               </Text>
