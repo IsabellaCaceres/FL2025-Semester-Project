@@ -36,8 +36,6 @@ We plan to use local storage for our database and React Native + Expo for the fr
     - Windows: `iwr https://supabase.com/cli/install/windows | iex`
 - Expo Go (mobile testing) or a web browser (web testing)
 
-> Docker is no longer required for the default workflow.
-
 ### 2. Environment setup
 
 1. **Auto start everything (installs deps, starts Supabase, keys, sync, API server, Expo)**
