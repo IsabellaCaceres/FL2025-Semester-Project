@@ -11,7 +11,7 @@ import {
   Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styling/global-styles";
+import styles from "../styling/GroupsScreen.styles";
 import { allGroups } from "../data/data";
 import { useLibrary } from "../lib/library-context";
 

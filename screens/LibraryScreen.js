@@ -11,7 +11,7 @@ import {
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styling/global-styles";
+import styles from "../styling/LibrarysScreen.styles";
 import { useLibrary } from "../lib/library-context";
 import BookModal from "../components/BookModal";
 

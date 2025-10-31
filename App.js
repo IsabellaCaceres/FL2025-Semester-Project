@@ -27,11 +27,33 @@ import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
+//Fonts
+import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@expo-google-fonts/buenard";
+import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
+import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+
 const Tab = createBottomTabNavigator();
 const DEFAULT_AUTH_STATUS =
   "Enter a username and password to sign in or create an account.";
 
 export default function App() {
+  // const [fontsLoaded] = useBuenard({
+  //   Buenard_400Regular,
+  //   Buenard_700Bold,
+  // });
+
+  // const [rokkittLoaded] = useRokkitt({
+  //   Rokkitt_400Regular,
+  //   Rokkitt_700Bold,
+  // });
+
+  // const [bebasLoaded] = useBebas({
+  //   BebasNeue_400Regular,
+  // });
+
+  // if (!fontsLoaded || !rokkittLoaded || !bebasLoaded) {
+  //   return null;
+  // }
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);
@@ -306,15 +328,33 @@ export default function App() {
           screenOptions={({ route }) => ({
             //Header Styling
             headerStyle: {
-              backgroundColor: theme.colors.teal,
+              backgroundColor: theme.colors.offwhite,
             },
+            headerShadowVisible: false,
+            headerBackground: () => (
+              <View style={{ flex: 1, backgroundColor: theme.colors.offwhite }}>
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 15,
+                    width: "90%",
+                    height: 1, 
+                    backgroundColor: theme.colors.black, 
+                  }}
+                />
+              </View>),
             headerTitleStyle: {
-              fontSize: theme.fontSizes.lg,
+              fontSize: theme.fontSizes.txl,
               fontWeight: theme.fontWeight.bold,
-              color: theme.colors.offwhite,
+              color: theme.colors.black,
+              fontFamily: theme.fonts.text
+            },
+            headerTitleContainerStyle: {
+              paddingTop: theme.spacing.md,
             },
             headerTintColor: theme.colors.offwhite,
-            headerTitleAlign: "center",
+            headerTitleAlign: "left",
 
             // Tab Styling
             tabBarStyle: styles.navigation.tabBar,
@@ -369,8 +409,8 @@ export default function App() {
           <Tab.Screen name="Account">
             {() => (
               <View style={styles.center}>
-                <Text style={styles.hero}>Signed in as</Text>
-                <Text style={styles.subtitle}>{displayName}</Text>
+                <Text style={styles.subtitle}>Signed in as</Text>
+                <Text style={styles.hero}>{displayName}</Text>
                 <Pressable style={styles.button} onPress={signOut}>
                   <Text style={styles.buttonLabel}>Sign out</Text>
                 </Pressable>

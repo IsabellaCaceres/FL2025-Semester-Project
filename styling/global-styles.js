@@ -2,6 +2,8 @@ import { StyleSheet } from "react-native";
 import { theme } from "./theme";
 
 export default StyleSheet.create({
+
+  // Full App
   container: {
     flex: 1,
     backgroundColor: theme.colors.offwhite,
@@ -11,6 +13,7 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: theme.colors.offwhite,
   },
   form: {
     width: "80%",
@@ -50,8 +53,9 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.offwhite,
   },
   button: {
-    backgroundColor: theme.colors.black,
+    backgroundColor: theme.colors.teal,
     paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     alignItems: "center",
     marginVertical: theme.spacing.sm,
@@ -88,6 +92,7 @@ export default StyleSheet.create({
     color: theme.colors.teal,
     fontWeight: theme.fontWeight.semiBold,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -109,6 +114,8 @@ export default StyleSheet.create({
     color: theme.colors.offwhite,
     fontWeight: theme.fontWeight.semiBold,
   },
+
+
   section: {
     marginBottom: theme.spacing.lg,
   },
@@ -117,6 +124,7 @@ export default StyleSheet.create({
     fontWeight: theme.fontWeight.semiBold,
     marginBottom: theme.spacing.sm,
     color: theme.colors.black,
+    fontFamily: theme.fonts.subheading
   },
   bookCard: {
     width: 140,
@@ -511,13 +519,13 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.beige,
   },
 
-  sectionTitle: {
-    fontSize: theme.fontSizes.sm + 2,
-    fontWeight: theme.fontWeight.semiBold,
-    letterSpacing: 1,
-    color: theme.colors.black,
-    marginBottom: theme.spacing.md,
-  },
+  // sectionTitle: {
+  //   fontSize: theme.fontSizes.sm + 2,
+  //   fontWeight: theme.fontWeight.semiBold,
+  //   letterSpacing: 1,
+  //   color: theme.colors.black,
+  //   marginBottom: theme.spacing.md,
+  // },
 
   bookDetailRow: {
     flexDirection: "row",
