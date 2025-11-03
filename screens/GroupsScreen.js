@@ -11,9 +11,11 @@ import {
   Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../styling/GroupsScreen.styles";
 import { allGroups } from "../data/data";
 import { useLibrary } from "../lib/library-context";
+
 
 export default function GroupsScreen() {
   const { library } = useLibrary();
@@ -28,6 +30,9 @@ export default function GroupsScreen() {
   const [maxMembers, setMaxMembers] = useState("10");
   const [isPublic, setIsPublic] = useState(true);
   const [invitees, setInvitees] = useState("");
+
+  const navigation = useNavigation();
+
 
   const handleCreateGroup = () => {
     if (!groupName.trim()) {
@@ -129,22 +134,21 @@ export default function GroupsScreen() {
         ) : myGroups.length > 0 ? (
           <>
             {myGroups.map((group) => (
-              <View key={group.id} style={styles.groupCard}>
-                <Text style={styles.groupName}>{group.name}</Text>
-                <Text style={styles.groupBook}>
-                  {group.isPublic ? "Public" : "Private"} | Max {group.maxMembers} members
-                </Text>
-                {group.vibeTags?.length ? (
-                  <Text style={styles.groupBook}>Tags: {group.vibeTags.join(", ")}</Text>
-                ) : null}
-                <Pressable
-                  style={[styles.button, styles.groupButton]}
-                  onPress={() => handleOpenGroup(group)}
-                >
-                  <Text style={styles.buttonLabel}>Open Group</Text>
-                </Pressable>
-              </View>
-            ))}
+  <Pressable
+    key={group.id}
+    style={styles.groupCard}
+    onPress={() => navigation.navigate("GroupChat", { group })}
+    accessibilityRole="button"
+  >
+    <Text style={styles.groupName}>{group.name}</Text>
+    <Text style={styles.groupBook}>
+      {group.isPublic ? "Public" : "Private"} | Max {group.maxMembers} members
+    </Text>
+    {group.vibeTags?.length ? (
+      <Text style={styles.groupBook}>Tags: {group.vibeTags.join(", ")}</Text>
+    ) : null}
+  </Pressable>
+))}
             <Pressable
               style={[styles.button, styles.groupButton]}
               onPress={() => setShowBrowse(true)}
@@ -246,11 +250,17 @@ export default function GroupsScreen() {
 
             {!showJoinButton && (
               <Pressable
-                style={[styles.button, styles.openChatButton]}
-                onPress={() => Alert.alert("Open Chat", `Opening chat for "${selectedGroup?.name}"`)}
-              >
-                <Text style={styles.buttonLabel}>Open Chat</Text>
-              </Pressable>
+              style={[styles.button, styles.openChatButton]}
+              onPress={() => {
+                const g = selectedGroup;
+                setSelectedGroup(null);
+                setShowReadMore(false);
+                setShowJoinButton(false);
+                navigation.navigate("GroupChat", { group: g });
+              }}
+            >
+              <Text style={styles.buttonLabel}>Open Chat</Text>
+            </Pressable>
             )}
 
             <Pressable

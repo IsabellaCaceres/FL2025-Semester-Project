@@ -4,6 +4,7 @@ import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-nativ
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import styles from "./styling/global-styles";
 import { theme } from "./styling/theme";
 import { LibraryProvider } from "./lib/library-context";
@@ -20,6 +21,8 @@ import HomeScreen from "./screens/HomeScreen";
 import LibraryScreen from "./screens/LibraryScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import SearchScreen from "./screens/SearchScreen";
+import GroupChatScreen from "./screens/GroupChatScreen";
+
 
 //Icons
 import { Ionicons } from "@expo/vector-icons";
@@ -32,7 +35,29 @@ import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@ex
 import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
 import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
 
+
 const Tab = createBottomTabNavigator();
+
+const Stack = createNativeStackNavigator();
+
+function GroupStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="GroupsHome"
+        component={GroupsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GroupChat"
+        component={GroupChatScreen}
+        options={({ route }) => ({ title: route.params?.group?.name ?? "Group Chat" })}
+      />
+    </Stack.Navigator>
+  );
+}
+
+
 const DEFAULT_AUTH_STATUS =
   "Enter a username and password to sign in or create an account.";
 
@@ -405,7 +430,7 @@ export default function App() {
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
           <Tab.Screen name="Search" component={SearchScreen} />
-          <Tab.Screen name="My Groups" component={GroupsScreen} />
+          <Tab.Screen name="My Groups" component={GroupStack} />
           <Tab.Screen name="Account">
             {() => (
               <View style={styles.center}>
