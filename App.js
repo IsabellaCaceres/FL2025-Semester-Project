@@ -33,8 +33,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 //Fonts
 import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@expo-google-fonts/buenard";
 import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
-import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
-
+// import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+import { useFonts } from 'expo-font';
 
 const Tab = createBottomTabNavigator();
 
@@ -62,23 +62,11 @@ const DEFAULT_AUTH_STATUS =
   "Enter a username and password to sign in or create an account.";
 
 export default function App() {
-  // const [fontsLoaded] = useBuenard({
-  //   Buenard_400Regular,
-  //   Buenard_700Bold,
-  // });
-
-  // const [rokkittLoaded] = useRokkitt({
-  //   Rokkitt_400Regular,
-  //   Rokkitt_700Bold,
-  // });
-
-  // const [bebasLoaded] = useBebas({
-  //   BebasNeue_400Regular,
-  // });
-
-  // if (!fontsLoaded || !rokkittLoaded || !bebasLoaded) {
-  //   return null;
-  // }
+  const [fontsLoaded] = useFonts({
+    // 'BebasNeue' is the key/name you will use in your style's fontFamily property.
+    'BebasNeue': require('./assets/fonts/BebasNeue-Regular.ttf'), 
+    // Add other variants if you have them, e.g., 'BebasNeue-Bold'
+  });
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [user, setUser] = useState(null);

@@ -6,7 +6,9 @@ export const theme = {
     black: "#201D19",
     coffee: "#8E5C4E",
     teal: "#578888",
-    grey: "#9A958D"
+    grey: "#9A958D",
+    bookOverlay: "rgba(32, 29, 25, 0.75)",
+    buttonOverlay: "rgba(23, 22, 21, 0.7)"
   },
   spacing: {
     xs: 2,
@@ -22,6 +24,7 @@ export const theme = {
     xl: 24,
     xxl: 28,
     txl: 32,
+    qxl: 45
   },
   borderRadius: {
     sm: 6,
