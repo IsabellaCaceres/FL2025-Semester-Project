@@ -1,13 +1,14 @@
-.git
 node_modules
+.bun
 .expo
 .expo-shared
 dist
 build
-ios
-android
-.env*
-*.log
-Dockerfile
-docker-compose.yml
+tmp
+logs
+npm-debug.log*
+yarn-error.log*
+*.bun-install-cache
+.DS_Store
+.git
 

@@ -2,6 +2,8 @@ import { StyleSheet } from "react-native";
 import { theme } from "./theme";
 
 export default StyleSheet.create({
+
+  // Full App
   container: {
     flex: 1,
     backgroundColor: theme.colors.offwhite,
@@ -11,6 +13,7 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: theme.colors.offwhite,
   },
   form: {
     width: "80%",
@@ -50,8 +53,9 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.offwhite,
   },
   button: {
-    backgroundColor: theme.colors.black,
+    backgroundColor: theme.colors.teal,
     paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.lg,
     alignItems: "center",
     marginVertical: theme.spacing.sm,
@@ -88,6 +92,7 @@ export default StyleSheet.create({
     color: theme.colors.teal,
     fontWeight: theme.fontWeight.semiBold,
   },
+
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -109,6 +114,8 @@ export default StyleSheet.create({
     color: theme.colors.offwhite,
     fontWeight: theme.fontWeight.semiBold,
   },
+
+
   section: {
     marginBottom: theme.spacing.lg,
   },
@@ -117,6 +124,7 @@ export default StyleSheet.create({
     fontWeight: theme.fontWeight.semiBold,
     marginBottom: theme.spacing.sm,
     color: theme.colors.black,
+    fontFamily: theme.fonts.subheading
   },
   bookCard: {
     width: 140,
@@ -405,33 +413,91 @@ export default StyleSheet.create({
 
   // Navigation styling
   navigation: {
-    tabBar: {
-      backgroundColor: theme.colors.offwhite,
-      borderTopColor: theme.colors.offwhite,
-      borderTopWidth: 1,
-      height: 60,
+    topBarContainer: {
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.spacing.md,
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+      backgroundColor: "transparent",
     },
-    tabBarLabel: {
-      fontSize: theme.fontSizes.sm,
-      fontWeight: theme.fontWeight.semiBold,
-      marginBottom: 4,
-    },
-    tabBarLabelActive: {
-      color: theme.colors.teal,
-    },
-    tabBarLabelInactive: {
-      color: theme.colors.black,
-    },
-    tabBarIconContainer: {
+    topBarShell: {
+      flexDirection: "row",
       alignItems: "center",
       justifyContent: "center",
-      marginTop: 4,
+      gap: theme.spacing.lg,
+      position: "relative",
     },
-    tabBarIconActive: {
-      tintColor: theme.colors.teal,
+    topBarSegment: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 0,
+      flexShrink: 1,
+      justifyContent: "center",
+      backgroundColor: theme.colors.black,
+      borderRadius: 32,
+      paddingHorizontal: theme.spacing.xs,
+      paddingVertical: theme.spacing.xs,
     },
-    tabBarIconInactive: {
-      tintColor: theme.colors.black,
+    topBarItem: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: theme.spacing.sm,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.lg,
+      borderRadius: 999,
+      marginHorizontal: theme.spacing.xs,
+      marginVertical: theme.spacing.xs,
+    },
+    topBarItemActive: {
+      backgroundColor: "rgba(255,255,255,0.18)",
+      borderRadius: 999,
+    },
+    topBarIconActive: {
+      color: theme.colors.offwhite,
+    },
+    topBarIconInactive: {
+      color: "rgba(255,255,255,0.55)",
+    },
+    topBarChip: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.xs,
+    },
+    topBarLabel: {
+      fontSize: 21,
+      letterSpacing: 0.2,
+      color: "rgba(255,255,255,0.6)",
+      fontFamily: theme.fonts.text,
+    },
+    topBarLabelActive: {
+      color: theme.colors.offwhite,
+    },
+    topBarProfileButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.md,
+      borderRadius: 30,
+    },
+    topBarProfile: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      backgroundColor: theme.colors.offwhite,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    topBarProfileInitial: {
+      color: theme.colors.black,
+      fontWeight: theme.fontWeight.semiBold,
+      fontSize: theme.fontSizes.md,
+      letterSpacing: 0.3,
     },
   },
 
@@ -511,13 +577,13 @@ export default StyleSheet.create({
     backgroundColor: theme.colors.beige,
   },
 
-  sectionTitle: {
-    fontSize: theme.fontSizes.sm + 2,
-    fontWeight: theme.fontWeight.semiBold,
-    letterSpacing: 1,
-    color: theme.colors.black,
-    marginBottom: theme.spacing.md,
-  },
+  // sectionTitle: {
+  //   fontSize: theme.fontSizes.sm + 2,
+  //   fontWeight: theme.fontWeight.semiBold,
+  //   letterSpacing: 1,
+  //   color: theme.colors.black,
+  //   marginBottom: theme.spacing.md,
+  // },
 
   bookDetailRow: {
     flexDirection: "row",

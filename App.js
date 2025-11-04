@@ -1,12 +1,14 @@
 // app.js
 import React, { useEffect, useState } from "react";
-import { View, Text, TextInput, Pressable, ActivityIndicator } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import styles from "./styling/global-styles";
 import { theme } from "./styling/theme";
 import { LibraryProvider } from "./lib/library-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   fetchCurrentUser,
   signIn as apiSignIn,
@@ -20,30 +22,201 @@ import HomeScreen from "./screens/HomeScreen";
 import LibraryScreen from "./screens/LibraryScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import SearchScreen from "./screens/SearchScreen";
+import GroupChatScreen from "./screens/GroupChatScreen";
 
+import SignInScreen from "./screens/SignInScreen";
 //Icons
 import { Ionicons } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 
+//Fonts
+import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@expo-google-fonts/buenard";
+import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
+import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+
+
 const Tab = createBottomTabNavigator();
+
+const Stack = createNativeStackNavigator();
+
+const AUTH_STAGES = {
+  SIGN_IN: "signIn",
+  SIGN_UP: "signUp",
+  FORGOT_PASSWORD: "forgotPassword",
+};
+
+function GroupStack() {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="GroupsHome"
+        component={GroupsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="GroupChat"
+        component={GroupChatScreen}
+        options={({ route }) => ({ title: route.params?.group?.name ?? "Group Chat" })}
+      />
+    </Stack.Navigator>
+  );
+}
+
+function TopTabBar({ state, descriptors, navigation, profileInitial }) {
+  const insets = useSafeAreaInsets();
+  const primaryRoutes = state.routes.filter((route) => route.name !== "Account");
+  const accountRoute = state.routes.find((route) => route.name === "Account");
+
+  const getIcon = (routeName, isFocused) => {
+    const palette = isFocused
+      ? styles.navigation.topBarIconActive.color
+      : styles.navigation.topBarIconInactive.color;
+    const size = 20;
+
+    switch (routeName) {
+      case "Home":
+        return <Ionicons name={isFocused ? "newspaper" : "newspaper-outline"} size={size} color={palette} />;
+      case "Library":
+        return <Ionicons name={isFocused ? "library" : "library-outline"} size={size} color={palette} />;
+      case "Search":
+        return <Feather name="search" size={size - 2} color={palette} />;
+      case "My Groups":
+        return <MaterialIcons name="groups" size={size + 1} color={palette} />;
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <SafeAreaView
+      pointerEvents="box-none"
+      style={[
+        styles.navigation.topBarContainer,
+        { paddingTop: insets.top + theme.spacing.md },
+      ]}
+    >
+      <View style={styles.navigation.topBarShell}>
+        <View style={styles.navigation.topBarSegment}>
+          {primaryRoutes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const rawLabel =
+              options.tabBarLabel !== undefined
+                ? options.tabBarLabel
+                : options.title !== undefined
+                ? options.title
+                : route.name;
+          const displayLabel = route.name === "My Groups" ? "Groups" : rawLabel;
+
+          const isFocused = state.index === state.routes.indexOf(route);
+
+          const onPress = () => {
+            const event = navigation.emit({
+              type: "tabPress",
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!isFocused && !event.defaultPrevented) {
+              navigation.navigate(route.name);
+            }
+          };
+
+          const onLongPress = () => {
+            navigation.emit({
+              type: "tabLongPress",
+              target: route.key,
+            });
+          };
+
+            return (
+              <Pressable
+                key={route.key}
+                accessibilityRole="button"
+                accessibilityState={isFocused ? { selected: true } : {}}
+                onPress={onPress}
+                onLongPress={onLongPress}
+                style={[
+                  styles.navigation.topBarItem,
+                  isFocused ? styles.navigation.topBarItemActive : null,
+                ]}
+              >
+                {getIcon(route.name, isFocused)}
+                <Text
+                  style={[
+                    styles.navigation.topBarLabel,
+                    isFocused && styles.navigation.topBarLabelActive,
+                  ]}
+                >
+                  {displayLabel}
+                </Text>
+              </Pressable>
+            );
+          })}
+
+          {accountRoute ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Open account"
+              onPress={() => navigation.navigate(accountRoute.name)}
+              onLongPress={() =>
+                navigation.emit({
+                  type: "tabLongPress",
+                  target: accountRoute.key,
+                })
+              }
+              style={styles.navigation.topBarProfileButton}
+            >
+              <View style={styles.navigation.topBarProfile}>
+                <Text style={styles.navigation.topBarProfileInitial}>
+                  {(profileInitial ?? "A").slice(0, 1).toUpperCase()}
+                </Text>
+              </View>
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+
 const DEFAULT_AUTH_STATUS =
   "Enter a username and password to sign in or create an account.";
 
 export default function App() {
+  // const [fontsLoaded] = useBuenard({
+  //   Buenard_400Regular,
+  //   Buenard_700Bold,
+  // });
+
+  // const [rokkittLoaded] = useRokkitt({
+  //   Rokkitt_400Regular,
+  //   Rokkitt_700Bold,
+  // });
+
+  // const [bebasLoaded] = useBebas({
+  //   BebasNeue_400Regular,
+  // });
+
+  // if (!fontsLoaded || !rokkittLoaded || !bebasLoaded) {
+  //   return null;
+  // }
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [resetCurrentPassword, setResetCurrentPassword] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState(DEFAULT_AUTH_STATUS);
   const [submittingAction, setSubmittingAction] = useState(null);
-  const [showReset, setShowReset] = useState(false);
-  const [resetCurrentPassword, setResetCurrentPassword] = useState("");
-  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [authStage, setAuthStage] = useState(AUTH_STAGES.SIGN_IN);
 
   const displayName =
     user?.user_metadata?.username ?? user?.email ?? user?.user_metadata?.full_name ?? null;
+
+  const displayStatusMessage =
+    statusMessage === DEFAULT_AUTH_STATUS ? "" : statusMessage;
 
   useEffect(() => {
     const loadUser = async () => {
@@ -54,8 +227,19 @@ export default function App() {
     loadUser();
   }, []);
 
-  const normalizeUsernameInput = () => {
-    const trimmed = username.trim();
+  const transitionToStage = (nextStage) => {
+    if (!nextStage || !Object.values(AUTH_STAGES).includes(nextStage)) return;
+    setAuthStage(nextStage);
+    setStatusMessage(DEFAULT_AUTH_STATUS);
+    setSubmittingAction(null);
+    if (nextStage !== AUTH_STAGES.FORGOT_PASSWORD) {
+      setResetCurrentPassword("");
+      setResetNewPassword("");
+    }
+  };
+
+  const normalizeUsernameInput = (value, { updateState = true } = {}) => {
+    const trimmed = (value ?? "").trim();
     if (!trimmed) {
       setStatusMessage("Enter a username first.");
       return null;
@@ -65,13 +249,13 @@ export default function App() {
       setStatusMessage("Use letters, numbers, dots, underscores, or dashes in your username.");
       return null;
     }
-    if (normalized !== username) setUsername(normalized);
+    if (updateState && normalized !== value) setUsername(normalized);
     return normalized;
   };
 
   const handleSignIn = async () => {
     if (submittingAction) return;
-    const normalized = normalizeUsernameInput();
+    const normalized = normalizeUsernameInput(username);
     if (!normalized) return;
     if (!password) {
       setStatusMessage("Enter your password to sign in.");
@@ -81,12 +265,18 @@ export default function App() {
     try {
       const userResponse = await apiSignIn(normalized, password);
       if (!userResponse) {
-        setStatusMessage("Incorrect username or password. Try again or use Sign Up.");
+        setStatusMessage("Incorrect username or password. Try again or reset your password.");
+        setAuthStage(AUTH_STAGES.FORGOT_PASSWORD);
+        setResetCurrentPassword("");
+        setResetNewPassword("");
         return;
       }
       setUser(userResponse);
       setStatusMessage(`Welcome back, ${normalized}!`);
       setPassword("");
+      setResetCurrentPassword("");
+      setResetNewPassword("");
+      setAuthStage(AUTH_STAGES.SIGN_IN);
     } finally {
       setSubmittingAction(null);
     }
@@ -94,14 +284,14 @@ export default function App() {
 
   const handleSignUp = async () => {
     if (submittingAction) return;
-    const normalized = normalizeUsernameInput();
+    const normalized = normalizeUsernameInput(username);
     if (!normalized) return;
     if (!password) {
       setStatusMessage("Choose a password to create your account.");
       return;
     }
     if (password.length < 6) {
-      setStatusMessage("Password must be at least 6 characters long.");
+      setStatusMessage("Password must be over six characters.");
       return;
     }
     setSubmittingAction("signUp");
@@ -112,8 +302,12 @@ export default function App() {
         return;
       }
       setUser(userResponse);
-      setStatusMessage(`Account created. You're signed in as ${normalized}.`);
+      setUsername(normalized);
       setPassword("");
+      setStatusMessage(`Welcome aboard, ${normalized}!`);
+      setResetCurrentPassword("");
+      setResetNewPassword("");
+      setAuthStage(AUTH_STAGES.SIGN_IN);
     } finally {
       setSubmittingAction(null);
     }
@@ -121,48 +315,34 @@ export default function App() {
 
   const handleResetPassword = async () => {
     if (submittingAction) return;
-    const normalized = normalizeUsernameInput();
+    const normalized = normalizeUsernameInput(username);
     if (!normalized) return;
     if (!resetCurrentPassword) {
-      setStatusMessage("Enter your current password first.");
+      setStatusMessage("Enter your current password to reset it.");
       return;
     }
     if (!resetNewPassword) {
-      setStatusMessage("Enter a new password.");
+      setStatusMessage("Choose a new password to finish resetting.");
       return;
     }
     if (resetNewPassword.length < 6) {
-      setStatusMessage("New password must be at least 6 characters long.");
+      setStatusMessage("Password must be over six characters.");
       return;
     }
-    if (resetNewPassword === resetCurrentPassword) {
-      setStatusMessage("New password must be different from the current password.");
-      return;
-    }
-    setSubmittingAction("reset");
+    setSubmittingAction("resetPassword");
     try {
-      await apiResetPassword(normalized, resetCurrentPassword, resetNewPassword);
-      setStatusMessage("Password updated. Use your new password next time you sign in.");
+      const result = await apiResetPassword(normalized, resetCurrentPassword, resetNewPassword);
+      if (!result) {
+        setStatusMessage("Unable to reset your password. Double-check your credentials.");
+        return;
+      }
+      setStatusMessage("Password updated. Sign in with your new password.");
       setResetCurrentPassword("");
       setResetNewPassword("");
-      setShowReset(false);
       setPassword("");
+      setAuthStage(AUTH_STAGES.SIGN_IN);
     } finally {
       setSubmittingAction(null);
-    }
-  };
-
-  const toggleReset = () => {
-    const next = !showReset;
-    setShowReset(next);
-    setStatusMessage(
-      next
-        ? "Enter your username, current password, and a new password."
-        : DEFAULT_AUTH_STATUS
-    );
-    if (!next) {
-      setResetCurrentPassword("");
-      setResetNewPassword("");
     }
   };
 
@@ -171,131 +351,48 @@ export default function App() {
     setUser(null);
     setUsername("");
     setPassword("");
-    setShowReset(false);
     setResetCurrentPassword("");
     setResetNewPassword("");
     setSubmittingAction(null);
     setStatusMessage(DEFAULT_AUTH_STATUS);
+    setAuthStage(AUTH_STAGES.SIGN_IN);
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <Text>Loading…</Text>
-      </View>
-    );
+    return <View style={{ flex: 1, backgroundColor: "white" }} />;
   }
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <View style={styles.form}>
-          <Text style={styles.title}>Welcome</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            autoCapitalize="none"
-            value={username}
-            onChangeText={(value) => {
-              setUsername(value);
-              setStatusMessage(DEFAULT_AUTH_STATUS);
-            }}
-            placeholderTextColor="#999"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry
-            value={password}
-            onChangeText={(value) => {
-              setPassword(value);
-              setStatusMessage(DEFAULT_AUTH_STATUS);
-            }}
-            placeholderTextColor="#999"
-          />
-          <View style={styles.authActionRow}>
-            <Pressable
-              style={[
-                styles.button,
-                styles.authActionButton,
-                submittingAction && styles.buttonDisabled,
-              ]}
-              onPress={handleSignIn}
-              disabled={!!submittingAction}
-            >
-              {submittingAction === "signIn" ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonLabel}>Sign In</Text>
-              )}
-            </Pressable>
-            <Pressable
-              style={[
-                styles.button,
-                styles.authActionButton,
-                submittingAction && styles.buttonDisabled,
-              ]}
-              onPress={handleSignUp}
-              disabled={!!submittingAction}
-            >
-              {submittingAction === "signUp" ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonLabel}>Sign Up</Text>
-              )}
-            </Pressable>
-          </View>
-          <Pressable style={styles.linkButton} onPress={toggleReset}>
-            <Text style={styles.linkButtonLabel}>
-              {showReset ? "Cancel password reset" : "Reset password"}
-            </Text>
-          </Pressable>
-          {showReset ? (
-            <>
-              <TextInput
-                style={styles.input}
-                placeholder="Current password"
-                secureTextEntry
-                value={resetCurrentPassword}
-                onChangeText={(value) => {
-                  setResetCurrentPassword(value);
-                  setStatusMessage("Enter your username, current password, and a new password.");
-                }}
-                placeholderTextColor="#999"
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="New password"
-                secureTextEntry
-                value={resetNewPassword}
-                onChangeText={(value) => {
-                  setResetNewPassword(value);
-                  setStatusMessage("Enter your username, current password, and a new password.");
-                }}
-                placeholderTextColor="#999"
-              />
-              <Pressable
-                style={[
-                  styles.button,
-                  submittingAction && styles.buttonDisabled,
-                ]}
-                onPress={handleResetPassword}
-                disabled={!!submittingAction}
-              >
-                {submittingAction === "reset" ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonLabel}>Update Password</Text>
-                )}
-              </Pressable>
-            </>
-          ) : null}
-          {statusMessage ? (
-            <Text style={styles.formStatus}>{statusMessage}</Text>
-          ) : null}
-        </View>
-        <StatusBar style="auto" />
-      </View>
+      <SignInScreen
+        stage={authStage}
+        username={username}
+        password={password}
+        resetCurrentPassword={resetCurrentPassword}
+        resetNewPassword={resetNewPassword}
+        onUsernameChange={(value) => {
+          setUsername(value);
+          setStatusMessage(DEFAULT_AUTH_STATUS);
+        }}
+        onPasswordChange={(value) => {
+          setPassword(value);
+          setStatusMessage(DEFAULT_AUTH_STATUS);
+        }}
+        onResetCurrentPasswordChange={(value) => {
+          setResetCurrentPassword(value);
+          setStatusMessage(DEFAULT_AUTH_STATUS);
+        }}
+        onResetNewPasswordChange={(value) => {
+          setResetNewPassword(value);
+          setStatusMessage(DEFAULT_AUTH_STATUS);
+        }}
+        onSubmitSignIn={handleSignIn}
+        onSubmitSignUp={handleSignUp}
+        onSubmitResetPassword={handleResetPassword}
+        submittingAction={submittingAction}
+        statusMessage={displayStatusMessage}
+        onStageChange={transitionToStage}
+      />
     );
   }
 
@@ -303,74 +400,30 @@ export default function App() {
     <LibraryProvider user={user}>
       <NavigationContainer>
         <Tab.Navigator
-          screenOptions={({ route }) => ({
-            //Header Styling
-            headerStyle: {
-              backgroundColor: theme.colors.teal,
-            },
-            headerTitleStyle: {
-              fontSize: theme.fontSizes.lg,
-              fontWeight: theme.fontWeight.bold,
-              color: theme.colors.offwhite,
-            },
-            headerTintColor: theme.colors.offwhite,
-            headerTitleAlign: "center",
-
-            // Tab Styling
-            tabBarStyle: styles.navigation.tabBar,
-            tabBarLabelStyle: styles.navigation.tabBarLabel,
-            tabBarActiveTintColor: styles.navigation.tabBarLabelActive.color,
-            tabBarInactiveTintColor: styles.navigation.tabBarLabelInactive.color,
-            tabBarIcon: ({ focused, color, size }) => {
-              let IconComponent;
-              let iconName;
-
-              switch (route.name) {
-                case "Home":
-                  IconComponent = Ionicons;
-                  iconName = "home";
-                  break;
-                case "Library":
-                  IconComponent = FontAwesome;
-                  iconName = "book";
-                  break;
-                case "Search":
-                  IconComponent = Feather;
-                  iconName = "search";
-                  break;
-                case "My Groups":
-                  IconComponent = MaterialIcons;
-                  iconName = "chat";
-                  break;
-                case "Account":
-                  IconComponent = FontAwesome;
-                  iconName = "user";
-                  break;
-                default:
-                  return null;
-              }
-
-              return (
-                <View style={styles.navigation.tabBarIconContainer}>
-                  <IconComponent
-                    name={iconName}
-                    size={size}
-                    color={focused ? styles.navigation.tabBarIconActive.tintColor : styles.navigation.tabBarIconInactive.tintColor}
-                  />
-                </View>
-              );
-            },
-          })}
+          screenOptions={{
+            headerShown: false,
+            tabBarStyle: { height: 0 },
+          }}
+          sceneContainerStyle={{
+            paddingTop: 76,
+            backgroundColor: theme.colors.offwhite,
+          }}
+          tabBar={(props) => (
+            <TopTabBar
+              {...props}
+              profileInitial={displayName ? displayName.charAt(0) : "A"}
+            />
+          )}
         >
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
           <Tab.Screen name="Search" component={SearchScreen} />
-          <Tab.Screen name="My Groups" component={GroupsScreen} />
+          <Tab.Screen name="My Groups" component={GroupStack} />
           <Tab.Screen name="Account">
             {() => (
               <View style={styles.center}>
-                <Text style={styles.hero}>Signed in as</Text>
-                <Text style={styles.subtitle}>{displayName}</Text>
+                <Text style={styles.subtitle}>Signed in as</Text>
+                <Text style={styles.hero}>{displayName}</Text>
                 <Pressable style={styles.button} onPress={signOut}>
                   <Text style={styles.buttonLabel}>Sign out</Text>
                 </Pressable>
@@ -379,7 +432,7 @@ export default function App() {
           </Tab.Screen>
         </Tab.Navigator>
 
-        <StatusBar style="auto" />
+        <StatusBar style="dark" />
       </NavigationContainer>
     </LibraryProvider>
   );

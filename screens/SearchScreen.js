@@ -1,206 +1,363 @@
 // screens/SearchScreen.js
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Image,
+  Pressable,
   ScrollView,
+  Text,
   TextInput,
-  TouchableOpacity,
-  Modal,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import styles from "../styling/global-styles";
-import BookModal from "../components/BookModal";
+import { Feather } from "@expo/vector-icons";
+import styles from "../styling/SearchScreen.styles";
+import { theme } from "../styling/theme";
+import { semanticSearch, fetchSemanticRecommendations } from "../lib/api";
 import { useLibrary } from "../lib/library-context";
+
+const QUICK_PROMPTS = [
+  "I want a whimsical fantasy with found family",
+  "Give me a sharp contemporary romance with banter",
+  "Looking for a high-stakes sci-fi thriller",
+  "Suggest a lyrical historical drama with mystery",
+];
+
+function formatSnippet(text) {
+  if (!text) return null;
+  const cleaned = text.replace(/\s+/g, " ").trim();
+  if (cleaned.length <= 260) return cleaned;
+  return `${cleaned.slice(0, 257)}…`;
+}
 
 export default function SearchScreen() {
   const {
-    genres,
-    search,
-    filterByGenre,
     addToLibrary,
     removeFromLibrary,
     isInLibrary,
-    isLoading,
-    library,
+    getBook,
+    refreshRecommendations,
   } = useLibrary();
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [selectedBook, setSelectedBook] = useState(null);
-  const [activeGenre, setActiveGenre] = useState(null);
-  const [showCongratsModal, setShowCongratsModal] = useState(false);
 
-  const clearFilters = () => {
-    setActiveGenre(null);
-    setResults([]);
-    setQuery("");
-  };
+  const [inputValue, setInputValue] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
+  const [lastQuery, setLastQuery] = useState("");
+  const [reasoning, setReasoning] = useState("");
+  const [searchError, setSearchError] = useState("");
+  const [results, setResults] = useState([]);
+  const [pendingBookId, setPendingBookId] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+
+  const mapResults = useCallback(
+    (items = []) =>
+      items
+        .map((item) => {
+          const hash = item?.bookId ?? item?.book_id ?? null;
+          const book = hash ? getBook(hash) : null;
+          if (!book) return null;
+          return {
+            book,
+            reason: item?.reason ?? null,
+            confidence: item?.confidence ?? null,
+            similarity: item?.similarity ?? null,
+            snippets: Array.isArray(item?.snippets) ? item.snippets : [],
+            source: item?.source ?? "semantic",
+          };
+        })
+        .filter(Boolean),
+    [getBook]
+  );
+
+  const loadSuggestions = useCallback(async () => {
+    setIsLoadingSuggestions(true);
+    try {
+      const data = await fetchSemanticRecommendations(8);
+      setSuggestions(mapResults(data));
+    } catch (error) {
+      console.warn("[search] Failed to load recommendations", error);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, [mapResults]);
 
   useEffect(() => {
-    const trimmed = query.trim();
-    if (trimmed) {
-      setResults(search(trimmed));
-      return;
-    }
-    if (activeGenre) {
-      setResults(filterByGenre(activeGenre));
-      return;
-    }
-    setResults([]);
-  }, [query, activeGenre, filterByGenre, search]);
+    loadSuggestions();
+  }, [loadSuggestions]);
 
-  const handleGenrePress = (genre) => {
-    setActiveGenre((prev) => (prev === genre ? null : genre));
-    setQuery("");
-  };
+  const handleSearch = useCallback(
+    async (override) => {
+      if (isSearching) return;
+      const queryText = (override ?? inputValue).trim();
+      if (!queryText) return;
+      setInputValue(queryText);
+      setIsSearching(true);
+      setSearchError("");
+      try {
+        const response = await semanticSearch(queryText, { limit: 6 });
+        if (!response) {
+          setResults([]);
+          setReasoning("");
+          setSearchError("I couldn’t find anything that fits. Try describing the characters or tone.");
+          setLastQuery(queryText);
+          return;
+        }
+        const mapped = mapResults(response.results ?? []);
+        if (!mapped.length) {
+          setResults([]);
+          setReasoning("");
+          setSearchError("I heard you, but I need a few more details to find the right match.");
+          setLastQuery(queryText);
+          return;
+        }
+        setResults(mapped);
+        setReasoning(response.reasoning ?? "");
+        setLastQuery(queryText);
+        await refreshRecommendations();
+        await loadSuggestions();
+      } catch (error) {
+        console.error("[search] Semantic search failed", error);
+        setSearchError("Something went wrong. Give it another try in a moment.");
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [inputValue, isSearching, mapResults, refreshRecommendations, loadSuggestions]
+  );
 
-  const handleSearch = () => {
-    const trimmed = query.trim();
-    if (trimmed) setResults(search(trimmed));
-  };
+  const handleToggleLibrary = useCallback(
+    async (book) => {
+      if (!book || pendingBookId) return;
+      const alreadyInLibrary = isInLibrary(book.id);
+      setPendingBookId(book.id);
+      try {
+        if (alreadyInLibrary) await removeFromLibrary(book.id);
+        else await addToLibrary(book.id);
+        await refreshRecommendations();
+        await loadSuggestions();
+      } catch (error) {
+        console.warn("[search] Failed to update library", error);
+      } finally {
+        setPendingBookId(null);
+      }
+    },
+    [addToLibrary, removeFromLibrary, isInLibrary, pendingBookId, refreshRecommendations, loadSuggestions]
+  );
 
-  const handleAddToLibrary = (bookId) => {
-    const wasEmpty = library.length === 0;
-    addToLibrary(bookId);
-    if (wasEmpty) {
-      setShowCongratsModal(true);
+  const inputDisabled = isSearching || !inputValue.trim();
+
+  const resultContent = useMemo(() => {
+    if (!results.length) {
+      return null;
     }
-  };
+
+    return results.map(({ book, reason, snippets }) => {
+      const inLibrary = isInLibrary(book.id);
+      const snippet = snippets?.length ? formatSnippet(snippets[0]) : null;
+      return (
+        <View key={book.id} style={styles.resultCard}>
+          <View style={styles.resultCoverShadow}>
+            <Image
+              source={book.coverSource ?? book.cover ?? undefined}
+              style={styles.resultCover}
+              resizeMode="cover"
+            />
+          </View>
+          <View style={styles.resultContent}>
+            <Text style={styles.resultTitle}>{book.title}</Text>
+            {book.author ? <Text style={styles.resultAuthor}>by {book.author}</Text> : null}
+            {reason ? <Text style={styles.resultReason}>{reason}</Text> : null}
+            {snippet ? <Text style={styles.resultSnippet}>{snippet}</Text> : null}
+            <Pressable
+              style={[
+                styles.resultButton,
+                inLibrary ? styles.resultButtonAdded : styles.resultButtonAdd,
+              ]}
+              onPress={() => handleToggleLibrary(book)}
+              disabled={pendingBookId === book.id}
+            >
+              {pendingBookId === book.id ? (
+                <ActivityIndicator size="small" color={theme.colors.black} />
+              ) : (
+                <Text
+                  style={[
+                    styles.resultButtonLabel,
+                    inLibrary ? styles.resultButtonLabelAdded : null,
+                  ]}
+                >
+                  {inLibrary ? "In Library" : "Add to Library"}
+                </Text>
+              )}
+            </Pressable>
+          </View>
+        </View>
+      );
+    });
+  }, [results, isInLibrary, handleToggleLibrary, pendingBookId]);
+
+  const suggestionContent = useMemo(() => {
+    if (isLoadingSuggestions && !suggestions.length) {
+      return (
+        <View style={styles.suggestionEmpty}>
+          <ActivityIndicator size="small" color="rgba(32,29,25,0.5)" />
+          <Text style={styles.suggestionEmptyLabel}>Finding picks for you…</Text>
+        </View>
+      );
+    }
+
+    if (!suggestions.length) {
+      return null;
+    }
+
+    return (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.suggestionRow}
+      >
+        {suggestions.map(({ book, reason }, index) => {
+          const inLibrary = isInLibrary(book.id);
+          return (
+            <View key={`${book.id}-${index}`} style={styles.suggestionCard}>
+              <Image
+                source={book.coverSource ?? book.cover ?? undefined}
+                style={styles.suggestionCover}
+                resizeMode="cover"
+              />
+              <View style={styles.suggestionContent}>
+                <Text style={styles.suggestionTitle}>{book.title}</Text>
+                {book.author ? <Text style={styles.suggestionAuthor}>{book.author}</Text> : null}
+                {reason ? <Text style={styles.suggestionReason}>{reason}</Text> : null}
+              </View>
+              <Pressable
+                style={[
+                  styles.suggestionButton,
+                  inLibrary ? styles.suggestionButtonAdded : null,
+                ]}
+                onPress={() => handleToggleLibrary(book)}
+                disabled={pendingBookId === book.id}
+              >
+                <Text
+                  style={[
+                    styles.suggestionButtonLabel,
+                    inLibrary ? styles.suggestionButtonLabelAdded : null,
+                  ]}
+                >
+                  {inLibrary ? "In Library" : "Add"}
+                </Text>
+              </Pressable>
+            </View>
+          );
+        })}
+      </ScrollView>
+    );
+  }, [suggestions, isLoadingSuggestions, isInLibrary, handleToggleLibrary, pendingBookId]);
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.searchScroll}>
-        {/* Search header */}
-        <View style={[styles.searchHeaderContainer, styles.searchHeaderTall]}>
-          <Text style={styles.searchHeaderText}>What are you looking for?</Text>
-
-          {/* Search bar with button */}
-          <View style={styles.searchRow}>
-            <TextInput
-              style={[styles.searchInput, styles.searchInputFlex]}
-              placeholder="Book clubs, authors, profiles, etc."
-              value={query}
-              onChangeText={(text) => {
-                setQuery(text);
-                if (text.trim()) setActiveGenre(null);
-              }}
-            />
-            <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
-              <Text style={styles.searchButtonText}>Search</Text>
-            </TouchableOpacity>
-          </View>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.heroCard}>
+          <Text style={styles.heroEyebrow}>Library Intelligence</Text>
+          <Text style={styles.heroTitle}>Describe your next read.</Text>
+          <Text style={styles.heroSubtitle}>
+            Tell us about the characters, vibes, tropes—or anything you want—and we’ll surface
+            books that match.
+          </Text>
         </View>
 
-        {/* Results or genres */}
-        {query.trim() || activeGenre ? (
-          <View style={styles.searchResults}>
-            {activeGenre ? (
-              <View style={styles.searchActiveFilter}>
-                <Text style={styles.searchActiveLabel}>
-                  Showing "{activeGenre}"
-                </Text>
-                <TouchableOpacity
-                  style={styles.searchClearButton}
-                  onPress={clearFilters}
-                >
-                  <Text style={styles.searchClearText}>Clear filter</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
-            {isLoading ? (
-              <Text style={styles.searchEmpty}>Syncing your library…</Text>
-            ) : results.length > 0 ? (
-              results.map((book) => {
-                const inLibrary = isInLibrary(book.id);
-                return (
-                  <View key={book.id} style={styles.searchResultCard}>
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onPress={() => setSelectedBook(book)}
-                    >
-                      <Text style={styles.searchResultTitle}>{book.title}</Text>
-                      {book.authors.length ? (
-                        <Text style={styles.searchResultAuthor}>
-                          {book.authors.join(", ")}
-                        </Text>
-                      ) : null}
-                      {book.summary ? (
-                        <Text style={styles.searchResultSummary}>
-                          {book.summary}
-                        </Text>
-                      ) : null}
-                      {book.genres.length ? (
-                        <Text style={styles.searchResultMeta}>
-                          {book.genres.join(" • ")}
-                        </Text>
-                      ) : null}
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.button, styles.searchResultButton]}
-                      onPress={() =>
-                        inLibrary
-                          ? removeFromLibrary(book.id)
-                          : handleAddToLibrary(book.id)
-                      }
-                      disabled={isLoading}
-                    >
-                      <Text style={styles.buttonLabel}>
-                        {inLibrary ? "Remove from Library" : "Add to Library"}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                );
-              })
-            ) : (
-              <Text style={styles.searchEmpty}>No books found.</Text>
-            )}
-          </View>
-        ) : (
-          <View style={styles.genreGrid}>
-            {genres.map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.genreCard,
-                  activeGenre === item ? styles.genreCardActive : null,
-                ]}
-                onPress={() => handleGenrePress(item)}
+        <View style={styles.messageStack}>
+          {lastQuery ? (
+            <View style={styles.messageBubble}>
+              <Text style={styles.messageBadge}>You</Text>
+              <Text style={styles.messageHeading}>{lastQuery}</Text>
+            </View>
+          ) : null}
+          {reasoning ? (
+            <View style={styles.messageBubble}>
+              <Text style={styles.messageBadge}>AI</Text>
+              <Text style={styles.messageHeading}>Why these picks work</Text>
+              <Text style={styles.messageBody}>{reasoning}</Text>
+            </View>
+          ) : null}
+          {searchError && !results.length ? (
+            <View style={styles.messageBubble}>
+              <Text style={styles.messageBadge}>AI</Text>
+              <Text style={styles.messageHeading}>Let’s try again</Text>
+              <Text style={styles.messageBody}>{searchError}</Text>
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.quickPromptSection}>
+          <Text style={styles.quickPromptTitle}>Try one of these prompts</Text>
+          <View style={styles.quickPromptGrid}>
+            {QUICK_PROMPTS.map((prompt) => (
+              <Pressable
+                key={prompt}
+                style={styles.quickPromptChip}
+                onPress={() => handleSearch(prompt)}
+                disabled={isSearching}
               >
-                <Text style={styles.genreLabel}>{item}</Text>
-              </TouchableOpacity>
+                <Text style={styles.quickPromptLabel}>{prompt}</Text>
+              </Pressable>
             ))}
           </View>
-        )}
+        </View>
+
+        {results.length ? (
+          <View style={styles.resultsSection}>
+            <Text style={styles.resultsHeading}>Matches</Text>
+            <View style={styles.resultList}>{resultContent}</View>
+          </View>
+        ) : null}
+
+        <View style={styles.suggestionSection}>
+          <View style={styles.suggestionHeader}>
+            <Text style={styles.suggestionTitleHeader}>Because you liked…</Text>
+            <Pressable
+              onPress={loadSuggestions}
+              style={styles.suggestionRefresh}
+              disabled={isLoadingSuggestions}
+            >
+              {isLoadingSuggestions ? (
+                <ActivityIndicator size="small" color="rgba(32,29,25,0.6)" />
+              ) : (
+                <Feather name="refresh-ccw" size={18} color="rgba(32,29,25,0.6)" />
+              )}
+            </Pressable>
+          </View>
+          {suggestionContent}
+        </View>
       </ScrollView>
 
-      <BookModal
-        visible={!!selectedBook}
-        book={selectedBook}
-        onClose={() => setSelectedBook(null)}
-      />
-
-      {/* Congratulations Modal */}
-      <Modal
-        visible={showCongratsModal}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setShowCongratsModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.congratsModal}>
-            <Text style={styles.congratsTitle}>🎉 Congratulations!</Text>
-            <Text style={styles.congratsText}>
-              You've added your first book! Check back home for your personalized recommendations.
-            </Text>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => setShowCongratsModal(false)}
-            >
-              <Text style={styles.buttonLabel}>Got it!</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <View style={styles.inputBar}>
+        <TextInput
+          value={inputValue}
+          onChangeText={setInputValue}
+          placeholder="Describe what you want to read next"
+          placeholderTextColor="rgba(32,29,25,0.4)"
+          style={styles.input}
+          autoCapitalize="sentences"
+          returnKeyType="search"
+          onSubmitEditing={() => handleSearch()}
+          editable={!isSearching}
+        />
+        <Pressable
+          style={[styles.inputButton, inputDisabled ? styles.inputButtonDisabled : null]}
+          onPress={() => handleSearch()}
+          disabled={inputDisabled}
+        >
+          {isSearching ? (
+            <ActivityIndicator size="small" color="rgba(32,29,25,0.7)" />
+          ) : (
+            <Feather name="arrow-up-right" size={20} color="rgba(32,29,25,0.7)" />
+          )}
+        </Pressable>
+      </View>
     </SafeAreaView>
   );
 }
