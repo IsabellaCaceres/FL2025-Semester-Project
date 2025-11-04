@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import styles from "../styling/GroupsScreen.styles";
 import { allGroups } from "../data/data";
 import { useLibrary } from "../lib/library-context";
+import GroupModal from "../components/GroupModal";
 
 
 export default function GroupsScreen() {
@@ -175,103 +176,14 @@ export default function GroupsScreen() {
       </ScrollView>
 
       {/* Modal for viewing group details */}
-      <Modal
+      <GroupModal
         visible={!!selectedGroup}
-        animationType="slide"
-        transparent
-        onRequestClose={handleCloseGroup}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <ScrollView>
-              {/* Group Header */}
-              <View style={styles.groupDetailHeader}>
-                <View style={styles.groupProfilePic}>
-                  <Text style={styles.groupProfileInitial}>
-                    {selectedGroup?.name?.charAt(0) || "G"}
-                  </Text>
-                </View>
-                <View style={styles.groupDetailHeaderText}>
-                  <Text style={styles.headerTitle}>{selectedGroup?.name}</Text>
-                  <Text style={styles.groupDetailSubtext}>
-                    {selectedGroup?.isPublic ? "DISCUSSES ONLINE" : "PRIVATE GROUP"}
-                  </Text>
-                  <Text style={styles.groupDetailSubtext}>
-                    {selectedGroup?.maxMembers || 0} members
-                  </Text>
-                </View>
-                {showJoinButton && (
-                  <Pressable
-                    style={[styles.button, styles.joinButton]}
-                    onPress={handleJoinGroup}
-                  >
-                    <Text style={styles.buttonLabel}>JOIN</Text>
-                  </Pressable>
-                )}
-              </View>
-
-              {/* Currently Reading Section */}
-              <View style={styles.currentlyReadingSection}>
-                <Text style={styles.sectionTitle}>CURRENTLY READING</Text>
-                <View style={styles.bookDetailRow}>
-                  <View style={styles.bookCoverPlaceholder}>
-                    <Text style={styles.placeholderText}>Book Cover</Text>
-                  </View>
-                  <View style={styles.bookDetailInfo}>
-                    <Text style={styles.bookDetailTitle}>
-                      About {selectedGroup?.name}
-                    </Text>
-                    <Text style={styles.bookDetailDescription}>
-                      Welcome to {selectedGroup?.name}! We hope you're ready for some great reads and invigorating discussions!
-                      {"\n\n"}
-                      Our focus is to highlight exceptional books from all different genres.
-                      {showReadMore && (
-                        <>
-                          {"\n\n"}
-                          This book club operates through messages where we share our favorite reads and discuss them together. Join us to connect with fellow readers!
-                        </>
-                      )}
-                    </Text>
-                    <Pressable onPress={() => setShowReadMore(!showReadMore)}>
-                      <Text style={styles.showMoreLink}>
-                        {showReadMore ? "Show less" : "Show more"}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-
-              <View style={styles.groupDetailFooter}>
-                <Text style={styles.stayConnectedText}>
-                  Stay connected with {selectedGroup?.name}
-                </Text>
-              </View>
-            </ScrollView>
-
-            {!showJoinButton && (
-              <Pressable
-              style={[styles.button, styles.openChatButton]}
-              onPress={() => {
-                const g = selectedGroup;
-                setSelectedGroup(null);
-                setShowReadMore(false);
-                setShowJoinButton(false);
-                navigation.navigate("GroupChat", { group: g });
-              }}
-            >
-              <Text style={styles.buttonLabel}>Open Chat</Text>
-            </Pressable>
-            )}
-
-            <Pressable
-              style={[styles.button, styles.buttonMuted, styles.modalCloseButton]}
-              onPress={handleCloseGroup}
-            >
-              <Text style={styles.buttonLabel}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+        selectedGroup={selectedGroup}
+        showJoinButton={showJoinButton}
+        onClose={handleCloseGroup}
+        onJoinGroup={handleJoinGroup} 
+        myGroups={myGroups}
+      />
 
       {/* Modal for creating groups */}
       <Modal

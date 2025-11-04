@@ -8,7 +8,7 @@ export const theme = {
     teal: "#578888",
     grey: "#9A958D",
     bookOverlay: "rgba(32, 29, 25, 0.75)",
-    buttonOverlay: "rgba(23, 22, 21, 0.7)"
+    buttonOverlay: "rgba(23, 22, 21, 0.6)"
   },
   spacing: {
     xs: 2,
@@ -24,7 +24,7 @@ export const theme = {
     xl: 24,
     xxl: 28,
     txl: 32,
-    qxl: 45
+    qxl: 42
   },
   borderRadius: {
     sm: 6,
