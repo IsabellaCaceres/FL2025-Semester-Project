@@ -1,0 +1,27 @@
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "bun install --frozen-lockfile --production && bun run web:docker"
+    working_dir: /app
+    environment:
+      EXPO_PUBLIC_API_URL: http://host.docker.internal:4000
+      EXPO_NO_TELEMETRY: "1"
+      EXPO_USE_DEV_SERVER: "true"
+      NODE_ENV: production
+      BUN_INSTALL_IGNORE_SCRIPTS: "1"
+    volumes:
+      - .:/app
+      - frontend_node_modules:/app/node_modules
+    ports:
+      - "19006:19006"
+      - "19000:19000"
+      - "19001:19001"
+      - "8081:8081"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  frontend_node_modules:
+

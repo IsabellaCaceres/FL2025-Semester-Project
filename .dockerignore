@@ -1,0 +1,14 @@
+node_modules
+.bun
+.expo
+.expo-shared
+dist
+build
+tmp
+logs
+npm-debug.log*
+yarn-error.log*
+*.bun-install-cache
+.DS_Store
+.git
+

@@ -36,7 +36,7 @@ We plan to use local storage for our database and React Native + Expo for the fr
     - Windows: `iwr https://supabase.com/cli/install/windows | iex`
 - Expo Go (mobile testing) or a web browser (web testing)
 
-> Docker is no longer required for the default workflow.
+> A Docker option is available for the frontend if you prefer to avoid managing Expo locally.
 
 ### 2. Environment setup
 
@@ -56,30 +56,62 @@ Both commands point the frontend at `http://127.0.0.1:4000` by default; set `EXP
 
 ### Manual command sequence
 
-1. Install dependencies: `bun install`
-2. Generate EPUB manifest: `bun run generate:epubs`
-3. Start Supabase: `bun run supabase:start`
-4. Export Supabase keys: `bun run supabase:keys`
-5. Sync EPUB storage: `bun run supabase:sync-epubs`
-6. RUN THIS IN A SEPARATE TERMINAL Start API server: `bun run server`
-7. Launch Expo: `bun expo start`
+Before running the scripts below, set `OPENAI_API_KEY` in `.env` (the existing scripts load it automatically).
 
+Open two terminals and run the commands for each role in order:
 
-# If running into Windows error where supabase command is nonfunctional, install supabase globally:
-1. **In powershell (can be done anywhere):**
-irm get.scoop.sh | iex
-scoop install supabase
+**Backend terminal**
+1. Start Supabase: `bun run supabase:start`
+2. Apply the latest migrations: `bunx supabase db push`
+3. Export Supabase keys: `bun run supabase:keys`
+4. Generate embeddings + upload EPUBs: `bun run supabase:sync-epubs`
+5. Start API server: `bun run server`
 
-2. **Now cd to project:**
-supabase start
+**Frontend terminal**
+1. Launch the Dockerized frontend (installs deps, generates EPUB manifest, starts Expo):
 
-3. **If Anon key doesn't generate, run:**
-supabase status -o json
+   ```bash
+   bun run docker:frontend
+   ```
 
-4. **Find "ANON_KEY" in the output, paste to .env file**
-Syntax:
-EXPO_PUBLIC_SUPABASE_URL=http://XXX.X.X.X:XXXXX
-EXPO_PUBLIC_SUPABASE_ANON_KEY={the anon key}
+   > Pass additional Docker Compose flags after `--`, e.g. `bun run docker:frontend -- --no-build`
 
-5. **Then run:**
-bun run expo start
+### Windows Supabase troubleshooting
+
+1. Install Scoop (one-time): `irm get.scoop.sh | iex`
+2. Install Supabase CLI: `scoop install supabase`
+3. Start Supabase inside the project: `supabase start`
+4. If the anon key is missing, run `supabase status -o json`, copy `ANON_KEY`, and add it to `.env`.
+5. Restart the backend commands above and rerun the frontend terminal (`bun run web`).
+
+### Frontend via Docker
+
+1. Ensure the backend terminal steps above are running on your host machine (the container depends on `http://127.0.0.1:4000`).
+2. Build and start the frontend container (installs dependencies, regenerates the EPUB manifest, and runs Expo automatically):
+
+   ```bash
+   bun run docker:frontend
+   ```
+
+   This wraps `docker compose up --build frontend` and exposes Expo on `http://localhost:19006`.
+   > Only production dependencies are installed inside the container, so Supabase tooling remains on the host.
+3. Tail container logs (optional):
+
+   ```bash
+   bun run docker:frontend:logs
+   ```
+
+4. When finished, shut everything down:
+
+   ```bash
+   bun run docker:frontend:down
+   ```
+
+### Quick test checklist
+
+| Role | Commands |
+| ---- | -------- |
+| Backend | `bun run supabase:start`<br>`bunx supabase db push`<br>`bun run supabase:keys`<br>`bun run supabase:sync-epubs`<br>`bun run server` |
+| Frontend (Docker) | `bun run docker:frontend` |
+
+Once both processes are up, sign in through the app, open the Search tab, try a natural-language query, and confirm the AI reasoning plus recommendations show up.

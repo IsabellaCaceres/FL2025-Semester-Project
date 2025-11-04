@@ -37,6 +37,20 @@ function findExpoBinary() {
   return null
 }
 
+function openBrowser(url) {
+  const { platform } = process
+  let command
+  if (platform === 'darwin') {
+    command = 'open'
+  } else if (platform === 'win32') {
+    command = 'start'
+  } else {
+    command = 'xdg-open'
+  }
+  
+  spawn(command, [url], { detached: true, stdio: 'ignore' })
+}
+
 async function main() {
   loadDotEnv()
 
@@ -44,13 +58,67 @@ async function main() {
 
   const expoBin = findExpoBinary() || 'expo'
   const args = ['start', ...process.argv.slice(2)]
+  const isWebMode = process.argv.includes('--web')
 
   await new Promise((resolvePromise, rejectPromise) => {
+    let browserOpened = false
+    let outputBuffer = ''
+    
     const child = spawn(expoBin, args, {
       cwd: rootDir,
-      stdio: 'inherit',
+      stdio: isWebMode ? ['inherit', 'pipe', 'pipe'] : 'inherit',
       env: process.env,
     })
+
+    // Capture stdout to detect when web server is ready
+    if (isWebMode && child.stdout) {
+      child.stdout.on('data', (data) => {
+        const text = data.toString()
+        outputBuffer += text
+        process.stdout.write(text) // Still show output to user
+        
+        // Look for web server URL patterns in Expo output
+        if (!browserOpened) {
+          // Try multiple patterns that Expo might use
+          const patterns = [
+            /web is waiting on (https?:\/\/[^\s]+)/i,
+            /Metro waiting on (https?:\/\/[^\s]+)/i,
+            /(https?:\/\/localhost:\d+)/i,
+            /(https?:\/\/127\.0\.0\.1:\d+)/i,
+            /open (https?:\/\/[^\s]+)/i,
+          ]
+          
+          for (const pattern of patterns) {
+            const match = outputBuffer.match(pattern)
+            if (match) {
+              browserOpened = true
+              const url = match[1] || match[0]
+              // Wait a bit for server to be fully ready
+              setTimeout(() => {
+                console.log(`\n🌐 Opening browser at ${url}\n`)
+                openBrowser(url)
+              }, 2000)
+              break
+            }
+          }
+          
+          // Fallback: if we see "web" and server indicators but no URL, try default port
+          if (!browserOpened && outputBuffer.includes('web') && 
+              (outputBuffer.includes('ready') || outputBuffer.includes('running'))) {
+            browserOpened = true
+            setTimeout(() => {
+              const defaultUrl = 'http://localhost:8081'
+              console.log(`\n🌐 Opening browser at ${defaultUrl}\n`)
+              openBrowser(defaultUrl)
+            }, 3000)
+          }
+        }
+      })
+      
+      child.stderr.on('data', (data) => {
+        process.stderr.write(data)
+      })
+    }
 
     child.on('error', rejectPromise)
     child.on('exit', (code) => {

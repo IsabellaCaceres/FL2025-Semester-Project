@@ -2,149 +2,363 @@
 import { StyleSheet } from "react-native";
 import { theme } from "./theme";
 
+const previewOverlap = theme.spacing.sm + theme.spacing.xs;
+
 export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.offwhite,
-    padding: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
-
-  // Tabs
-  tabRow: {
+  heroHeader: {
+    marginTop: theme.spacing.xl + theme.spacing.md,
+    marginBottom: theme.spacing.xl,
+    gap: theme.spacing.md,
+  },
+  heroRow: {
     flexDirection: "row",
-    marginBottom: theme.spacing.md,
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: theme.spacing.lg,
   },
-  tabButton: {
-    flex: 1,
-    padding: theme.spacing.sm,
+  heroTitleContainer: {
+    gap: theme.spacing.xs,
+  },
+  heroLabel: {
+    letterSpacing: 2.4,
+    textTransform: "uppercase",
+    fontSize: 13,
+    color: "rgba(32,29,25,0.5)",
+    fontFamily: theme.fonts.text,
+  },
+  heroTitle: {
+    fontSize: 60,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+    letterSpacing: 0.8,
+    lineHeight: 64,
+  },
+  heroSubtitle: {
+    fontSize: theme.fontSizes.lg,
+    color: "rgba(32,29,25,0.65)",
+    fontFamily: theme.fonts.text,
+    lineHeight: 26,
+    maxWidth: 360,
+  },
+  createButton: {
     backgroundColor: theme.colors.black,
-    borderRadius: theme.borderRadius.md,
-    marginRight: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: 999,
+    alignSelf: "flex-start",
+    shadowColor: "rgba(0,0,0,0.2)",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 2,
   },
-  tabButtonActive: {
-    backgroundColor: theme.colors.black,
-  },
-  tabButtonLabel: {
-    textAlign: "center",
+  createButtonLabel: {
     color: theme.colors.offwhite,
-    fontWeight: theme.fontWeight.semiBold,
+    fontFamily: theme.fonts.text,
+    fontSize: theme.fontSizes.md,
+    letterSpacing: 0.5,
+    fontWeight: theme.fontWeight.medium,
   },
-  tabButtonLabelActive: {
-    color: theme.colors.offwhite,
+  shelfSection: {
+    marginBottom: theme.spacing.xl,
   },
-
-  // Library grid
-  libraryGrid: {
+  shelfHeader: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    paddingBottom: theme.spacing.md,
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing.sm,
+  },
+  shelfTitle: {
+    fontSize: theme.fontSizes.lg,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.accent,
+    letterSpacing: 0.5,
+  },
+  shelfMeta: {
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    color: "rgba(32,29,25,0.55)",
+  },
+  shelfRow: {
+    paddingRight: theme.spacing.md,
   },
   bookCard: {
     width: 140,
-    alignItems: "center",
     marginRight: theme.spacing.md,
   },
+  bookArt: {
+    width: "100%",
+    aspectRatio: 2 / 3,
+    borderRadius: theme.borderRadius.lg,
+    overflow: "hidden",
+    backgroundColor: "rgba(32,29,25,0.05)",
+  },
   bookCover: {
-    width: 120,
-    height: 170,
-    borderRadius: theme.borderRadius.md,
-    marginBottom: theme.spacing.sm,
+    width: "100%",
+    height: "100%",
   },
   bookTitle: {
-    fontSize: theme.fontSizes.sm,
-    textAlign: "center",
-    color: theme.colors.black,
-  },
-
-  // Empty state
-  searchEmpty: {
-    textAlign: "center",
-    marginTop: theme.spacing.lg,
-    color: theme.colors.black,
-  },
-
-  // Buttons
-  button: {
-    backgroundColor: theme.colors.black,
-    paddingVertical: theme.spacing.md,
-    borderRadius: theme.borderRadius.lg,
-    alignItems: "center",
-    marginVertical: theme.spacing.sm,
-  },
-  buttonLabel: {
-    color: theme.colors.offwhite,
-    fontWeight: theme.fontWeight.semiBold,
     fontSize: theme.fontSizes.md,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.text,
+    marginTop: theme.spacing.sm,
   },
-  buttonMuted: {
-    backgroundColor: theme.colors.black,
+  emptyState: {
+    fontSize: theme.fontSizes.md,
+    color: "rgba(32,29,25,0.65)",
+    fontFamily: theme.fonts.text,
+    paddingVertical: theme.spacing.lg,
   },
-  createListButton: {
-    marginBottom: theme.spacing.md,
+  listsSection: {
+    marginTop: theme.spacing.xl,
+    gap: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(32,29,25,0.1)",
+    paddingTop: theme.spacing.lg,
   },
-
-  // Groups / lists
-  groupCard: {
-    backgroundColor: theme.colors.teal,
+  listsHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+  },
+  listsTitle: {
+    fontSize: 30,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+    letterSpacing: 0.6,
+  },
+  listsMeta: {
+    fontSize: 12,
+    color: "rgba(32,29,25,0.55)",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  listsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.lg,
+  },
+  listCard: {
+    width: 220,
+    backgroundColor: "rgba(255,255,255,0.95)",
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    gap: theme.spacing.sm,
+    shadowColor: "rgba(32,29,25,0.15)",
+    shadowOpacity: 0.18,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
   },
-  groupName: {
+  listPreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  listPreviewCoverWrapper: {
+    width: 56,
+    height: 84,
+    borderRadius: theme.borderRadius.md,
+    overflow: "hidden",
+    backgroundColor: "rgba(32,29,25,0.08)",
+    shadowColor: "rgba(0,0,0,0.15)",
+    shadowOpacity: 0.18,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  listPreviewCoverOverlap: {
+    marginLeft: -previewOverlap,
+  },
+  listPreviewCover: {
+    width: "100%",
+    height: "100%",
+  },
+  listPreviewPlaceholder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  listPreviewInitials: {
     fontSize: theme.fontSizes.md,
+    color: "rgba(32,29,25,0.6)",
+    fontFamily: theme.fonts.text,
     fontWeight: theme.fontWeight.semiBold,
-    marginBottom: theme.spacing.xs,
-    color: theme.colors.offwhite,
   },
-
-  // Modal
+  listPreviewOverflow: {
+    backgroundColor: theme.colors.teal,
+  },
+  listPreviewOverflowLabel: {
+    color: theme.colors.offwhite,
+    fontFamily: theme.fonts.text,
+    fontWeight: theme.fontWeight.semiBold,
+    fontSize: theme.fontSizes.sm,
+  },
+  listCardTitle: {
+    fontSize: theme.fontSizes.lg,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+  },
+  listCardMeta: {
+    fontSize: theme.fontSizes.sm,
+    color: "rgba(32,29,25,0.55)",
+    fontFamily: theme.fonts.text,
+  },
+  listGroup: {
+    gap: theme.spacing.sm,
+  },
+  listHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.3)",
     justifyContent: "center",
     alignItems: "center",
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
   },
   modalContainer: {
     width: "100%",
     maxWidth: 420,
     backgroundColor: theme.colors.offwhite,
     borderRadius: theme.borderRadius.xl,
-    padding: theme.spacing.lg,
+    padding: theme.spacing.xl,
+    gap: theme.spacing.md,
+    shadowColor: "rgba(32,29,25,0.2)",
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 4,
   },
-  modalScroll: {
-    maxHeight: 300,
-    marginBottom: theme.spacing.md,
-  },
-  headerTitle: {
+  modalTitle: {
     fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeight.bold,
     color: theme.colors.black,
-    marginBottom: theme.spacing.md,
+    fontFamily: theme.fonts.heading,
   },
   input: {
-    borderWidth: 1,
-    borderColor: theme.colors.black,
+    borderWidth: 0,
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
-    backgroundColor: theme.colors.offwhite,
+    fontFamily: theme.fonts.text,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    shadowColor: "rgba(32,29,25,0.12)",
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 1,
+  },
+  modalScroll: {
+    maxHeight: 320,
+  },
+  modalGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.md,
+    paddingBottom: theme.spacing.md,
+  },
+  modalGridItem: {
+    width: 120,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: "rgba(32,29,25,0.04)",
+    padding: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  modalGridItemSelected: {
+    backgroundColor: "rgba(87,136,136,0.18)",
+    shadowColor: "rgba(87,136,136,0.35)",
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  modalGridCoverShell: {
+    width: "100%",
+    aspectRatio: 2 / 3,
+    borderRadius: theme.borderRadius.sm,
+    overflow: "hidden",
+    backgroundColor: "rgba(32,29,25,0.08)",
+  },
+  modalGridCover: {
+    width: "100%",
+    height: "100%",
+  },
+  modalGridPlaceholder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalGridInitials: {
+    fontSize: theme.fontSizes.lg,
+    color: "rgba(32,29,25,0.6)",
+    fontFamily: theme.fonts.text,
+    fontWeight: theme.fontWeight.semiBold,
+  },
+  modalGridLabel: {
+    fontSize: theme.fontSizes.sm,
+    color: "rgba(32,29,25,0.75)",
+    fontFamily: theme.fonts.text,
+  },
+  modalEmptyState: {
+    fontSize: theme.fontSizes.md,
+    color: "rgba(32,29,25,0.5)",
+    fontFamily: theme.fonts.text,
+    paddingVertical: theme.spacing.lg,
   },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: theme.spacing.sm,
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.sm,
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
   },
   listItemSelected: {
-    backgroundColor: theme.colors.teal,
+    backgroundColor: "rgba(87,136,136,0.2)",
   },
   listItemImage: {
     width: 40,
     height: 60,
-    marginRight: theme.spacing.sm,
     borderRadius: theme.borderRadius.sm,
+    backgroundColor: "rgba(32,29,25,0.08)",
+  },
+  listItemTitle: {
+    flex: 1,
+    fontFamily: theme.fonts.text,
+    color: theme.colors.black,
+  },
+  modalPrimary: {
+    backgroundColor: theme.colors.black,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.xl,
+    alignItems: "center",
+  },
+  modalPrimaryDisabled: {
+    backgroundColor: "rgba(32,29,25,0.65)",
+  },
+  modalPrimaryLabel: {
+    color: theme.colors.offwhite,
+    fontFamily: theme.fonts.text,
+    fontWeight: theme.fontWeight.semiBold,
+    letterSpacing: 0.5,
+  },
+  modalPrimaryLabelDisabled: {
+    color: "rgba(247,238,226,0.8)",
+  },
+  modalSecondary: {
+    paddingVertical: theme.spacing.md,
+    alignItems: "center",
+  },
+  modalSecondaryLabel: {
+    color: "rgba(32,29,25,0.6)",
+    fontFamily: theme.fonts.text,
   },
 });

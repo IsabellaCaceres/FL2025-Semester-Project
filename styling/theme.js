@@ -36,10 +36,9 @@ export const theme = {
     bold: "700",
   },
   fonts: {
-    // buenardRegular: "Buenard_400Regular",
-    heading: "Buenard",
-    subheading: "BebasNeue",
-    text: "Rokkitt",
-    // textBold: "Rokkitt",
+    heading: "'Apple Garamond', 'Garamond', serif",
+    subheading: "'Apple Garamond', 'Garamond', serif",
+    text: "'SF Pro Text', '-apple-system', 'San Francisco', 'Helvetica Neue', Helvetica, Arial, sans-serif",
+    accent: "'Apple Garamond', 'Garamond', serif",
   },
 };

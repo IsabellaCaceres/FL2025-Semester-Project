@@ -6,122 +6,138 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.offwhite,
-    padding: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
   },
-
-  section: {
-    marginBottom: theme.spacing.lg,
+  content: {
+    paddingTop: theme.spacing.xl,
+    paddingBottom: theme.spacing.xl,
+    gap: theme.spacing.xl,
   },
-  sectionTitle: {
-    fontSize: theme.fontSizes.md,
-    fontWeight: theme.fontWeight.bold,
-    marginBottom: theme.spacing.sm,
-    color: theme.colors.black,
-    fontFamily: "Helvetica",
+  featureCard: {
+    backgroundColor: "rgba(32,29,25,0.04)",
+    borderRadius: theme.borderRadius.xl,
+    overflow: "hidden",
   },
-
-  searchEmpty: {
-    textAlign: "center",
-    marginTop: theme.spacing.lg,
-    color: theme.colors.black,
-  },
-
-  bookCard: {
-    width: 140,
-    alignItems: "center",
-    marginRight: theme.spacing.md,
-  },
-  bookCoverWrapper: {
-    backgroundColor: theme.colors.offwhite,
-    borderRadius: theme.borderRadius.md,
-    shadowColor: theme.colors.grey,
-    shadowOffset: { width: 1, height: 4 },
-    shadowOpacity: 0.6,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  bookCover: {
-    width: 120,
-    height: 170,
-    borderRadius: theme.borderRadius.md,
-  },
-  bookTitle: {
-    fontSize: theme.fontSizes.md,   
-    textAlign: "center",
-    color: theme.colors.black,
-    fontFamily: theme.fonts.text,
-    width: "90%",   
-    marginTop: theme.spacing.sm,               
-  },
-  recommendationsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  recommendationCard: {
-    width: "31%",
-    alignItems: "center",
-    marginBottom: theme.spacing.lg,
-    paddingVertical: theme.spacing.sm,
-  },
-  recommendationCoverWrapper: {
+  featureImageWrapper: {
     width: "100%",
-    aspectRatio: 2 / 3,
-    backgroundColor: theme.colors.offwhite,
-    borderRadius: theme.borderRadius.md,
-    shadowColor: theme.colors.grey,
-    shadowOffset: { width: 1, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 3,
-    marginBottom: theme.spacing.sm,
+    aspectRatio: 16 / 9,
+    backgroundColor: "rgba(32,29,25,0.08)",
   },
-  recommendationCover: {
+  featureImage: {
     width: "100%",
     height: "100%",
-    borderRadius: theme.borderRadius.md,
   },
-  recommendationTitle: {
-    fontSize: theme.fontSizes.md,
-    textAlign: "center",
-    color: theme.colors.black,
-    width: "100%",
-    fontFamily: theme.fonts.text
-  },
-
-  emptyRecommendationsContainer: {
-    alignItems: "center",
-    marginTop: theme.spacing.md,
-  },
-  emptyRecommendationsText: {
-    fontSize: theme.fontSizes.md,
-    color: theme.colors.black,
-    textAlign: "center",
-    marginBottom: theme.spacing.md,
-    lineHeight: 22,
-  },
-
-  goButton: {
-    backgroundColor: theme.colors.teal,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: theme.spacing.sm + 2,
-    paddingHorizontal: theme.spacing.lg + 4,
-    borderRadius: theme.borderRadius.xl,
+  featureContent: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
     gap: theme.spacing.sm,
   },
-  goButtonPressed: {
-    backgroundColor: theme.colors.black,
-    opacity: 0.8,
+  featureTitle: {
+    fontSize: 28,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+    letterSpacing: 0.5,
   },
-  goButtonText: {
-    color: theme.colors.offwhite,
+  featureAuthor: {
     fontSize: theme.fontSizes.md,
-    fontWeight: theme.fontWeight.semiBold,
+    color: "rgba(32,29,25,0.75)",
+    fontFamily: theme.fonts.accent,
   },
-  goButtonArrow: {
+  featureSummary: {
+    fontSize: theme.fontSizes.md,
+    lineHeight: 20,
+    color: "rgba(32,29,25,0.75)",
+    fontFamily: theme.fonts.text,
+  },
+  featureGenre: {
+    alignSelf: "flex-start",
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: theme.colors.black,
     color: theme.colors.offwhite,
+    fontSize: 12,
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  sectionHeader: {
+    marginBottom: theme.spacing.md,
+  },
+  sectionTitle: {
+    fontSize: 36,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+    marginBottom: theme.spacing.xs,
+    letterSpacing: 0.6,
+  },
+  genreGrid: {
+    paddingBottom: theme.spacing.lg,
+  },
+  genreSection: {
+    marginBottom: theme.spacing.xl,
+  },
+  genreHeader: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+  },
+  genreTitle: {
     fontSize: theme.fontSizes.lg,
-    fontWeight: theme.fontWeight.semiBold,
+    fontFamily: theme.fonts.accent,
+    color: theme.colors.black,
+    letterSpacing: 0.6,
+  },
+  genreCount: {
+    fontSize: 12,
+    color: "rgba(32,29,25,0.55)",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  genreRow: {
+    paddingRight: theme.spacing.md,
+  },
+  genreCard: {
+    width: 140,
+    marginRight: theme.spacing.md,
+  },
+  genreCoverWrapper: {
+    width: "100%",
+    aspectRatio: 2 / 3,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: "rgba(32,29,25,0.05)",
+    overflow: "hidden",
+  },
+  genreCover: {
+    width: "100%",
+    height: "100%",
+  },
+  genreBookTitle: {
+    fontSize: theme.fontSizes.md,
+    lineHeight: 20,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.text,
+    marginTop: theme.spacing.sm,
+  },
+  trendingSection: {
+    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.xl,
+  },
+  trendingHeader: {
+    marginBottom: theme.spacing.md,
+  },
+  trendingHeading: {
+    fontSize: 32,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.heading,
+    letterSpacing: 0.4,
+  },
+  trendingRow: {
+    paddingRight: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+  },
+  trendingCard: {
+    width: 280,
+    marginRight: theme.spacing.lg,
   },
 });
