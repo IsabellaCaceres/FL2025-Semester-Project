@@ -90,11 +90,11 @@ Open two terminals and run the commands for each role in order:
 2. Build and start the frontend container (installs dependencies, regenerates the EPUB manifest, and runs Expo automatically):
 
    ```bash
-   bun run docker:frontend
+   bun install
+   docker compose up --build frontend
+   bun expo start
    ```
 
-   This wraps `docker compose up --build frontend` and exposes Expo on `http://localhost:19006`.
-   > Only production dependencies are installed inside the container, so Supabase tooling remains on the host.
 3. Tail container logs (optional):
 
    ```bash
