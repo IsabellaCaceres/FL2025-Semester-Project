@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    command: sh -c "bun install --frozen-lockfile --production && bun run web:docker"
+    command: sh -c "bun install --frozen-lockfile && bun run web:docker"
     working_dir: /app
     environment:
       EXPO_PUBLIC_API_URL: http://host.docker.internal:4000
