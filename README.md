@@ -84,6 +84,29 @@ Open two terminals and run the commands for each role in order:
 4. If the anon key is missing, run `supabase status -o json`, copy `ANON_KEY`, and add it to `.env`.
 5. Restart the backend commands above and rerun the frontend terminal (`bun run web`).
 
+### Windows Git "Filename too long" error
+
+If you encounter `error: cannot stat 'assets/epubs/...': Filename too long` when running `git pull`:
+
+**Option 1: Enable long path support in Git (Recommended)**
+```bash
+git config --global core.longpaths true
+```
+Then try `git pull` again.
+
+**Option 2: Manually delete old epub files before pulling**
+If Option 1 doesn't work, delete the old long-named epub files manually:
+1. Navigate to `assets/epubs/` folder
+2. Delete any files with very long names (they should be replaced by hash-named files)
+3. Run `git pull` again
+
+**Option 3: Reset and re-clone (if above options fail)**
+```bash
+# Save any uncommitted changes first, then:
+git fetch origin
+git reset --hard origin/labubu
+```
+
 ### Frontend via Docker
 
 1. Ensure the backend terminal steps above are running on your host machine (the container depends on `http://127.0.0.1:4000`).

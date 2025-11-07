@@ -1,0 +1,6 @@
+# Enable long path support for Windows
+* text=auto
+
+# Ensure epub files are treated as binary to avoid line ending issues
+*.epub binary
+
