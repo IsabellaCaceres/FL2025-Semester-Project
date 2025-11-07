@@ -449,17 +449,50 @@ export async function generateEpubManifest({ rootDir = defaultRootDir } = {}) {
     const stat = await fs.stat(fullPath)
     if (!stat.isFile()) continue
 
-    const relPath = normalizePathSeparators(relative(rootDir, fullPath))
-
     try {
       const entry = await extractEntry(fullPath, rootDir, {
         coverOutputDir,
         legacyCoverDir,
       })
+      
+      // Rename file to contentHash.epub to avoid Windows path length issues
+      const targetFileName = `${entry.contentHash}.epub`
+      const targetPath = resolve(epubDir, targetFileName)
+      let finalPath = fullPath // Default to original path
+      
+      if (fileName !== targetFileName) {
+        // Only rename if the file doesn't already have the correct name
+        if (existsSync(targetPath)) {
+          // If target already exists, check if it's the same file
+          const existingBuffer = await fs.readFile(targetPath)
+          const existingHash = createHash('sha256').update(existingBuffer).digest('hex')
+          if (existingHash === entry.contentHash) {
+            // Same file, remove the duplicate
+            await fs.rm(fullPath, { force: true })
+            console.log(`[generate-epub-manifest] Removed duplicate: ${fileName}`)
+            finalPath = targetPath
+          } else {
+            // Different file with same hash (very unlikely), keep original name
+            console.warn(`[generate-epub-manifest] Hash collision detected for ${fileName}, keeping original name`)
+            finalPath = fullPath
+          }
+        } else {
+          // Rename to contentHash.epub
+          await fs.rename(fullPath, targetPath)
+          console.log(`[generate-epub-manifest] Renamed: ${fileName} -> ${targetFileName}`)
+          finalPath = targetPath
+        }
+      } else {
+        // File already has the correct name
+        finalPath = targetPath
+      }
+      
       if (!entry.paths) entry.paths = {}
+      const relPath = normalizePathSeparators(relative(rootDir, finalPath))
       entry.paths.epub = relPath
       entries.push(entry)
     } catch (error) {
+      const relPath = normalizePathSeparators(relative(rootDir, fullPath))
       console.warn(
         `[generate-epub-manifest] Skipped ${relPath}: ${error.message}`
       )
