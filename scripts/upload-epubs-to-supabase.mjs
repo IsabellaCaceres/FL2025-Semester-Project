@@ -52,6 +52,30 @@ if (!supabaseUrl || !serviceKey) {
 const supabase = createClient(supabaseUrl, serviceKey)
 const storageBucket = 'epubs'
 
+async function ensureStorageBucket() {
+  // Check if bucket exists
+  const { data: buckets, error: listError } = await supabase.storage.listBuckets()
+  if (listError) {
+    throw new Error(`Failed to list storage buckets: ${listError.message}`)
+  }
+  
+  const bucketExists = buckets?.some(bucket => bucket.name === storageBucket)
+  
+  if (!bucketExists) {
+    console.log(`[upload-epubs] Creating storage bucket '${storageBucket}'...`)
+    const { error: createError } = await supabase.storage.createBucket(storageBucket, {
+      public: false,
+      fileSizeLimit: 52428800, // 50MB
+      allowedMimeTypes: ['application/epub+zip']
+    })
+    
+    if (createError) {
+      throw new Error(`Failed to create storage bucket: ${createError.message}`)
+    }
+    console.log(`[upload-epubs] Storage bucket '${storageBucket}' created successfully`)
+  }
+}
+
 function compactObject(value) {
   if (!value || typeof value !== 'object') return value
   const result = {}
@@ -438,6 +462,7 @@ async function uploadBookAsset(book) {
 }
 
 async function main() {
+  await ensureStorageBucket()
   console.log(`[upload-epubs] Uploading ${catalog.length} books`)
   for (const book of catalog) {
     try {
