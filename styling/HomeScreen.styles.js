@@ -65,10 +65,10 @@ export default StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
   sectionTitle: {
-    fontSize: 36,
+     fontSize: 32,
+    fontWeight: theme.fontWeight.bold,
     color: theme.colors.black,
     fontFamily: theme.fonts.heading,
-    marginBottom: theme.spacing.xs,
     letterSpacing: 0.6,
   },
   genreGrid: {
@@ -84,7 +84,7 @@ export default StyleSheet.create({
   },
   genreTitle: {
     fontSize: theme.fontSizes.lg,
-    fontFamily: theme.fonts.accent,
+    fontFamily: theme.fonts.subheading,
     color: theme.colors.black,
     letterSpacing: 0.6,
   },
@@ -128,9 +128,10 @@ export default StyleSheet.create({
   },
   trendingHeading: {
     fontSize: 32,
+    fontWeight: theme.fontWeight.bold,
     color: theme.colors.black,
     fontFamily: theme.fonts.heading,
-    letterSpacing: 0.4,
+    letterSpacing: 0.6,
   },
   trendingRow: {
     paddingRight: theme.spacing.lg,

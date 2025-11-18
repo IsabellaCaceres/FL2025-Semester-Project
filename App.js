@@ -33,7 +33,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 //Fonts
 import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@expo-google-fonts/buenard";
 import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
-import { useFonts as useBebas, BebasNeue_400Regular } from "@expo-google-fonts/bebas-neue";
+import { useFonts } from 'expo-font';
 
 
 const Tab = createBottomTabNavigator();
@@ -104,30 +104,30 @@ function TopTabBar({ state, descriptors, navigation, profileInitial }) {
               options.tabBarLabel !== undefined
                 ? options.tabBarLabel
                 : options.title !== undefined
-                ? options.title
-                : route.name;
-          const displayLabel = route.name === "My Groups" ? "Groups" : rawLabel;
+                  ? options.title
+                  : route.name;
+            const displayLabel = route.name === "My Groups" ? "Groups" : rawLabel;
 
-          const isFocused = state.index === state.routes.indexOf(route);
+            const isFocused = state.index === state.routes.indexOf(route);
 
-          const onPress = () => {
-            const event = navigation.emit({
-              type: "tabPress",
-              target: route.key,
-              canPreventDefault: true,
-            });
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
 
-            if (!isFocused && !event.defaultPrevented) {
-              navigation.navigate(route.name);
-            }
-          };
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
 
-          const onLongPress = () => {
-            navigation.emit({
-              type: "tabLongPress",
-              target: route.key,
-            });
-          };
+            const onLongPress = () => {
+              navigation.emit({
+                type: "tabLongPress",
+                target: route.key,
+              });
+            };
 
             return (
               <Pressable
@@ -202,6 +202,10 @@ export default function App() {
   // if (!fontsLoaded || !rokkittLoaded || !bebasLoaded) {
   //   return null;
   // }
+  const [fontsLoaded] = useFonts({
+    BebasNeue: require("./assets/fonts/BebasNeue-Regular.ttf"),
+  });
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [resetCurrentPassword, setResetCurrentPassword] = useState("");
