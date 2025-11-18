@@ -1,6 +1,6 @@
 // app.js
 import React, { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -64,7 +64,10 @@ function GroupStack() {
 }
 
 function TopTabBar({ state, descriptors, navigation, profileInitial }) {
+  const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
+  const isCompact = width < 700;
+
   const primaryRoutes = state.routes.filter((route) => route.name !== "Account");
   const accountRoute = state.routes.find((route) => route.name === "Account");
 
@@ -139,17 +142,22 @@ function TopTabBar({ state, descriptors, navigation, profileInitial }) {
                 style={[
                   styles.navigation.topBarItem,
                   isFocused ? styles.navigation.topBarItemActive : null,
+                  isCompact
+                      ? { flexBasis: 60, flexGrow: 0 } // fixed narrow width
+                      : { flex: 1 }, // spread evenly on wide screens
                 ]}
               >
                 {getIcon(route.name, isFocused)}
-                <Text
-                  style={[
-                    styles.navigation.topBarLabel,
-                    isFocused && styles.navigation.topBarLabelActive,
-                  ]}
-                >
-                  {displayLabel}
-                </Text>
+                {!isCompact && ( // 👈 hide labels if width < 500
+                  <Text
+                    style={[
+                      styles.navigation.topBarLabel,
+                      isFocused && styles.navigation.topBarLabelActive,
+                    ]}
+                  >
+                    {displayLabel}
+                  </Text>
+                )}
               </Pressable>
             );
           })}
