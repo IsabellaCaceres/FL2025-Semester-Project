@@ -10,7 +10,7 @@ ENV NODE_ENV=production \
     EXPO_NO_TELEMETRY=1 \
     EXPO_PUBLIC_API_URL=http://host.docker.internal:4000
 
-RUN bun install --frozen-lockfile --production
+RUN bun install --frozen-lockfile
 
 COPY . .
 
