@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
+
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -23,6 +24,8 @@ import LibraryScreen from "./screens/LibraryScreen";
 import GroupsScreen from "./screens/GroupsScreen";
 import SearchScreen from "./screens/SearchScreen";
 import GroupChatScreen from "./screens/GroupChatScreen";
+import ProfileScreen from "./screens/ProfileScreen";
+
 
 import SignInScreen from "./screens/SignInScreen";
 //Icons
@@ -432,16 +435,8 @@ export default function App() {
           <Tab.Screen name="Search" component={SearchScreen} />
           <Tab.Screen name="My Groups" component={GroupStack} />
           <Tab.Screen name="Account">
-            {() => (
-              <View style={styles.center}>
-                <Text style={styles.subtitle}>Signed in as</Text>
-                <Text style={styles.hero}>{displayName}</Text>
-                <Pressable style={styles.button} onPress={signOut}>
-                  <Text style={styles.buttonLabel}>Sign out</Text>
-                </Pressable>
-              </View>
-            )}
-          </Tab.Screen>
+  {() => <ProfileScreen user={user} onSignOut={signOut} />}
+</Tab.Screen>
         </Tab.Navigator>
 
         <StatusBar style="dark" />

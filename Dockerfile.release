@@ -1,0 +1,27 @@
+# Dockerfile.release
+FROM oven/bun:1.2.18
+
+# Set working directory inside container
+WORKDIR /app
+
+# Copy dependency files first (faster caching)
+COPY bun.lock package.json bunfig.toml ./
+COPY scripts ./scripts
+
+# Pre-install dependencies (this is your <install command>)
+RUN bun install --frozen-lockfile
+
+# Copy the rest of your code
+COPY . .
+
+# Set environment variables
+ENV NODE_ENV=production \
+    BUN_INSTALL_IGNORE_SCRIPTS=1 \
+    EXPO_NO_TELEMETRY=1 \
+    EXPO_PUBLIC_API_URL=http://host.docker.internal:4000
+
+# Expose ports
+EXPOSE 19000 19001 19006 8081
+
+# Run your web build
+CMD ["bun", "run", "web:docker"]
