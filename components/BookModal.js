@@ -7,6 +7,8 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useLibrary } from "../lib/library-context";
@@ -16,13 +18,15 @@ import BookReaderModal from "./BookReaderModal";
 function cleanSummary(raw) {
   if (!raw) return null;
   let summary = raw;
-  // ... keep your cleanSummary logic unchanged ...
   return summary.replace(/<[^>]+>/g, " ").replace(/&nbsp;/gi, " ").replace(/&mdash;/gi, "—").replace(/&ndash;/gi, "–").replace(/&rsquo;/gi, "'").replace(/&#160;/gi, " ").replace(/&#8729;/gi, "∙").replace(/&#8212;/gi, "—").replace(/&#39;/gi, "'").replace(/&rdquo;/gi, "”").replace(/&ldquo;/gi, "“").replace(/&quot;/gi, "\"").replace(/&apos;/gi, "'").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&amp;/gi, "&").replace(/&hellip;/gi, "…").replace(/&copy;/gi, "©").replace(/&reg;/gi, "®").replace(/&trade;/gi, "™").replace(/\s+/g, " ").replace(/\s([,.;!?])/g, "$1").trim();
 }
 
 export default function BookModal({ visible, book, onClose }) {
   const { addToLibrary, removeFromLibrary, isInLibrary } = useLibrary();
   const [readerOpen, setReaderOpen] = useState(false);
+  const { width, height } = useWindowDimensions();
+  const isWeb = Platform.OS === "web";
+  const isDesktop = isWeb && width > 768;
 
   useEffect(() => {
     if (!visible) setReaderOpen(false);
@@ -46,23 +50,31 @@ export default function BookModal({ visible, book, onClose }) {
   const publisher = book?.publisher ?? book?.metadata?.publisher ?? "";
   const genres = book?.genres ?? [];
 
-  const handlePrimaryAction = () => {
-    if (!book) return;
-    if (inLibrary) removeFromLibrary(book.id);
-    else addToLibrary(book.id);
-  };
+  if (!book) return null;
+
+  const containerStyle = isDesktop 
+    ? [modalStyles.webContainer, { maxHeight: height * 0.85 }] 
+    : modalStyles.fullscreenContainer;
 
   return (
     <>
       <Modal
         visible={!!(visible && book)}
-        animationType="slide"
-        transparent={false}   // 👈 full screen
+        animationType={isDesktop ? "fade" : "slide"}
+        transparent={true}
         statusBarTranslucent
         onRequestClose={onClose}
       >
-        {book ? (
-          <View style={modalStyles.fullscreenContainer}>
+        <View style={[
+          modalStyles.modalOverlay, 
+          isDesktop && modalStyles.webOverlay
+        ]}>
+           {/* Backdrop click to close on web */}
+           {isDesktop && (
+            <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+          )}
+
+          <View style={containerStyle}>
             {/* Banner */}
             <ImageBackground
               source={book.coverSource ?? book.cover ?? undefined}
@@ -71,7 +83,7 @@ export default function BookModal({ visible, book, onClose }) {
             >
               <View style={modalStyles.overlayLayer} />
               <View style={modalStyles.headerContent}>
-                <Text style={modalStyles.title}>{book.title}</Text>
+                <Text style={modalStyles.title} numberOfLines={2}>{book.title}</Text>
                 {authors ? <Text style={modalStyles.author}>by {authors}</Text> : null}
                 {publisher ? (
                   <Text style={modalStyles.metaLine}>Published by {publisher}</Text>
@@ -81,7 +93,7 @@ export default function BookModal({ visible, book, onClose }) {
                 ) : null}
               </View>
 
-              {/* Close button floating over banner */}
+              {/* Close button */}
               <Pressable
                 onPress={onClose}
                 style={modalStyles.closeButton}
@@ -91,7 +103,7 @@ export default function BookModal({ visible, book, onClose }) {
               </Pressable>
             </ImageBackground>
 
-            {/* Scrollable content below banner */}
+            {/* Scrollable content */}
             <ScrollView
               contentContainerStyle={modalStyles.scrollContent}
               showsVerticalScrollIndicator={false}
@@ -125,7 +137,7 @@ export default function BookModal({ visible, book, onClose }) {
               )}
             </ScrollView>
           </View>
-        ) : null}
+        </View>
       </Modal>
 
       <BookReaderModal
@@ -138,21 +150,45 @@ export default function BookModal({ visible, book, onClose }) {
 }
 
 const modalStyles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)", // Darken background for web focus
+  },
+  webOverlay: {
+    padding: theme.spacing.xl,
+  },
   fullscreenContainer: {
     flex: 1,
+    width: "100%",
     backgroundColor: theme.colors.offwhite,
+  },
+  webContainer: {
+    width: 600,
+    maxWidth: "90%",
+    backgroundColor: theme.colors.offwhite,
+    borderRadius: theme.borderRadius.lg,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
   bannerImage: {
     width: "100%",
-    height: 220,
+    height: 240,
     justifyContent: "flex-end",
   },
   overlayLayer: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundImage: "linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.8))", // Web gradient hint
   },
   headerContent: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
   },
   closeButton: {
     position: "absolute",
@@ -160,79 +196,90 @@ const modalStyles = StyleSheet.create({
     right: theme.spacing.md,
     backgroundColor: "rgba(0,0,0,0.4)",
     padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.full,
+    zIndex: 10,
   },
   title: {
-    fontSize: 26,
+    fontSize: 32,
     fontFamily: theme.fonts.heading,
-    color: theme.colors.offwhite,
+    color: theme.colors.white,
+    marginBottom: theme.spacing.xs,
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   author: {
     fontSize: theme.fontSizes.md,
-    color: theme.colors.offwhite,
+    color: "rgba(255,255,255,0.9)",
     fontFamily: theme.fonts.text,
+    marginBottom: theme.spacing.xs,
   },
   metaLine: {
     fontSize: theme.fontSizes.sm,
-    color: theme.colors.offwhite,
+    color: "rgba(255,255,255,0.7)",
     fontFamily: theme.fonts.text,
   },
   genrePill: {
     alignSelf: "flex-start",
     textTransform: "uppercase",
-    fontSize: 12,
-    backgroundColor: theme.colors.black,
-    color: theme.colors.offwhite,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.md,
-    marginTop: theme.spacing.xs,
+    fontSize: 11,
+    fontFamily: theme.fonts.text,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    color: theme.colors.white,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+    marginTop: theme.spacing.sm,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.3)",
   },
   scrollContent: {
-    padding: theme.spacing.lg,
+    padding: theme.spacing.xl,
     gap: theme.spacing.lg,
   },
   summary: {
     fontSize: theme.fontSizes.md,
-    lineHeight: 24,
-    color: "rgba(32,29,25,0.85)",
+    lineHeight: 26,
+    color: theme.colors.charcoal,
     fontFamily: theme.fonts.text,
   },
   controlsRow: {
     flexDirection: "row",
-    gap: theme.spacing.sm, // RN 0.71+ supports gap, else use marginRight
-    marginTop: theme.spacing.md,
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
   controlButton: {
-    flex: 1, // each button takes equal width
-    borderRadius: theme.borderRadius.xl,
+    flex: 1,
+    borderRadius: theme.borderRadius.full,
     paddingVertical: theme.spacing.md,
     alignItems: "center",
+    justifyContent: "center",
+    ...theme.shadows.sm,
   },
   readButton: {
     backgroundColor: theme.colors.black,
   },
   removeButton: {
-    backgroundColor: theme.colors.beige, 
+    backgroundColor: theme.colors.lightGrey,
+    borderWidth: 1,
+    borderColor: theme.colors.grey,
   },
   addButton: {
     backgroundColor: theme.colors.black,
-    marginTop: theme.spacing.md,
+    marginTop: theme.spacing.sm,
   },
   controlLabel: {
-    color: theme.colors.offwhite,
-    fontFamily: theme.fonts.text,
-    fontWeight: theme.fontWeight.semiBold,
-    letterSpacing: 0.4,
-  },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: "rgba(32,29,25,0.2)",
-  },
-  secondaryLabel: {
-    color: theme.colors.black,
+    color: theme.colors.white,
     fontFamily: theme.fonts.text,
     fontWeight: theme.fontWeight.medium,
+    letterSpacing: 0.5,
+    fontSize: theme.fontSizes.md,
+  },
+  secondaryLabel: {
+    color: theme.colors.charcoal,
+    fontFamily: theme.fonts.text,
+    fontWeight: theme.fontWeight.medium,
+    fontSize: theme.fontSizes.md,
   },
 });

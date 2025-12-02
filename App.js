@@ -1,8 +1,6 @@
-// app.js
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, useWindowDimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
-
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -18,7 +16,6 @@ import {
   resetPassword as apiResetPassword,
 } from "./lib/api";
 
-// Screens
 import HomeScreen from "./screens/HomeScreen";
 import LibraryScreen from "./screens/LibraryScreen";
 import GroupsScreen from "./screens/GroupsScreen";
@@ -28,14 +25,9 @@ import ProfileScreen from "./screens/ProfileScreen";
 
 
 import SignInScreen from "./screens/SignInScreen";
-//Icons
 import { Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
-
-//Fonts
-import { useFonts as useBuenard, Buenard_400Regular, Buenard_700Bold } from "@expo-google-fonts/buenard";
-import { useFonts as useRokkitt, Rokkitt_400Regular, Rokkitt_700Bold } from "@expo-google-fonts/rokkitt";
 import { useFonts } from 'expo-font';
 
 
@@ -60,7 +52,7 @@ function GroupStack() {
       <Stack.Screen
         name="GroupChat"
         component={GroupChatScreen}
-        options={({ route }) => ({ title: route.params?.group?.name ?? "Group Chat" })}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
@@ -151,7 +143,7 @@ function TopTabBar({ state, descriptors, navigation, profileInitial }) {
                 ]}
               >
                 {getIcon(route.name, isFocused)}
-                {!isCompact && ( // 👈 hide labels if width < 500
+                {!isCompact && (
                   <Text
                     style={[
                       styles.navigation.topBarLabel,
@@ -196,23 +188,6 @@ const DEFAULT_AUTH_STATUS =
   "Enter a username and password to sign in or create an account.";
 
 export default function App() {
-  // const [fontsLoaded] = useBuenard({
-  //   Buenard_400Regular,
-  //   Buenard_700Bold,
-  // });
-
-  // const [rokkittLoaded] = useRokkitt({
-  //   Rokkitt_400Regular,
-  //   Rokkitt_700Bold,
-  // });
-
-  // const [bebasLoaded] = useBebas({
-  //   BebasNeue_400Regular,
-  // });
-
-  // if (!fontsLoaded || !rokkittLoaded || !bebasLoaded) {
-  //   return null;
-  // }
   const [fontsLoaded] = useFonts({
     BebasNeue: require("./assets/fonts/BebasNeue-Regular.ttf"),
   });
@@ -423,20 +398,29 @@ export default function App() {
             paddingTop: 76,
             backgroundColor: theme.colors.offwhite,
           }}
-          tabBar={(props) => (
-            <TopTabBar
-              {...props}
-              profileInitial={displayName ? displayName.charAt(0) : "A"}
-            />
-          )}
+          tabBar={(props) => {
+            const nestedState = props.state.routes.find(r => r.name === "My Groups")?.state;
+            const nestedRouteName = nestedState?.routes?.[nestedState.index]?.name;
+            
+            if (nestedRouteName === "GroupChat") {
+              return null;
+            }
+
+            return (
+              <TopTabBar
+                {...props}
+                profileInitial={displayName ? displayName.charAt(0) : "A"}
+              />
+            );
+          }}
         >
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
           <Tab.Screen name="Search" component={SearchScreen} />
           <Tab.Screen name="My Groups" component={GroupStack} />
           <Tab.Screen name="Account">
-  {() => <ProfileScreen user={user} onSignOut={signOut} />}
-</Tab.Screen>
+            {() => <ProfileScreen user={user} onSignOut={signOut} />}
+          </Tab.Screen>
         </Tab.Navigator>
 
         <StatusBar style="dark" />

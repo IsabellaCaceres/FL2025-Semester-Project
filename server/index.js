@@ -497,6 +497,100 @@ app.post('/api/search/semantic', requireSession, async (req, res) => {
       return
     }
 
+    const isSocialQuery = trimmed.startsWith('@') || 
+                          /friends|group|chat|people|saying/.test(trimmed.toLowerCase());
+    
+    if (isSocialQuery) {
+       const { data: publicGroups } = await serviceClient
+         .from('groups')
+         .select('id')
+         .eq('is_public', true);
+       
+       const { data: myGroups } = await serviceClient
+         .from('group_members')
+         .select('group_id')
+         .eq('user_id', req.session.user_id);
+       
+       const myGroupIds = (myGroups || []).map(g => g.group_id);
+       const publicGroupIds = (publicGroups || []).map(g => g.id);
+       const allGroupIds = [...new Set([...myGroupIds, ...publicGroupIds])];
+
+       const { data: allMessages } = await serviceClient
+         .from('messages')
+         .select('id, content, user_id, group_id')
+         .in('group_id', allGroupIds.length ? allGroupIds : ['00000000-0000-0000-0000-000000000000'])
+         .order('created_at', { ascending: false })
+         .limit(50);
+
+       let semanticMessages = [];
+       const { data: matched, error: matchError } = await serviceClient.rpc(
+        'match_messages',
+        {
+          query_embedding: embedding,
+          match_threshold: 0.2,
+          match_count: 20,
+          filter_group_ids: allGroupIds.length ? allGroupIds : null 
+        }
+       );
+
+       if (matchError) {
+         logError('social-match', matchError);
+       } else {
+         semanticMessages = matched || [];
+       }
+
+       const messagesToUse = semanticMessages.length > 0 ? semanticMessages : allMessages;
+
+       if (messagesToUse && messagesToUse.length > 0) {
+          let context;
+          if (semanticMessages.length > 0) {
+            context = semanticMessages.map(m => 
+              `@${m.username}: "${m.content}"`
+            ).join('\n');
+          } else {
+            const userIds = [...new Set(allMessages.map(m => m.user_id).filter(Boolean))];
+            const { data: profiles } = await serviceClient
+              .from('profiles')
+              .select('id, username')
+              .in('id', userIds);
+            
+            const profileMap = {};
+            for (const p of profiles || []) {
+              profileMap[p.id] = p.username;
+            }
+            context = allMessages.slice(0, 20).map(m => 
+              `@${profileMap[m.user_id] || 'unknown'}: "${m.content}"`
+            ).join('\n');
+          }
+
+          const completion = await openaiClient.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+              { role: 'system', content: 'You are a helpful assistant summarizing what people are saying in a book club chat. Answer the question based on the messages. Be concise and friendly.' },
+              { role: 'user', content: `Query: ${trimmed}\n\nRecent messages from the group:\n${context}` }
+            ]
+          });
+          
+          const reasoning = completion.choices[0]?.message?.content || "Here's what I found.";
+          
+          res.json({
+            query: trimmed,
+            reasoning,
+            results: [],
+            type: 'social'
+          });
+          return;
+       }
+
+       res.json({
+         query: trimmed,
+         reasoning: "I couldn't find any messages in your groups yet. Join a group and start chatting!",
+         results: [],
+         type: 'social'
+       });
+       return;
+    }
+
     const matchCount = Math.min(24, safeLimit * 4)
     const { data: matches, error: matchError } = await serviceClient.rpc(
       'match_book_chunks',
@@ -1129,6 +1223,359 @@ app.get('/api/books/:bookId/download', requireSession, async (req, res) => {
   } catch (error) {
     logError('book-download', error)
     res.status(500).json({ error: 'Failed to download book' })
+  }
+})
+
+
+app.get('/api/profiles/me', requireSession, async (req, res) => {
+  try {
+    const { data, error } = await serviceClient
+      .from('profiles')
+      .select('*')
+      .eq('id', req.session.user_id)
+      .maybeSingle()
+    if (error) {
+      logError('profile-me', error)
+      res.status(500).json({ error: error.message })
+      return
+    }
+    res.json({ profile: data })
+  } catch (error) {
+    logError('profile-me', error)
+    res.status(500).json({ error: 'Failed to load profile' })
+  }
+})
+
+app.put('/api/profiles/me', requireSession, async (req, res) => {
+  try {
+    const { full_name, bio, avatar_url } = req.body
+    const updates = {
+      updated_at: new Date().toISOString(),
+    }
+    if (full_name !== undefined) updates.full_name = full_name
+    if (bio !== undefined) updates.bio = bio
+    if (avatar_url !== undefined) updates.avatar_url = avatar_url
+
+    const { data, error } = await serviceClient
+      .from('profiles')
+      .update(updates)
+      .eq('id', req.session.user_id)
+      .select()
+      .single()
+
+    if (error) {
+      logError('profile-update', error)
+      res.status(400).json({ error: error.message })
+      return
+    }
+    res.json({ profile: data })
+  } catch (error) {
+    logError('profile-update', error)
+    res.status(500).json({ error: 'Failed to update profile' })
+  }
+})
+
+app.get('/api/profiles/:username', requireSession, async (req, res) => {
+  try {
+    const { data, error } = await serviceClient
+      .from('profiles')
+      .select('*')
+      .eq('username', req.params.username)
+      .maybeSingle()
+    if (error) {
+      logError('profile-username', error)
+      res.status(400).json({ error: error.message })
+      return
+    }
+    if (!data) {
+      res.status(404).json({ error: 'Profile not found' })
+      return
+    }
+    res.json({ profile: data })
+  } catch (error) {
+    logError('profile-username', error)
+    res.status(500).json({ error: 'Failed to load profile' })
+  }
+})
+
+app.get('/api/groups/me', requireSession, async (req, res) => {
+  try {
+    const { data, error } = await serviceClient
+      .from('group_members')
+      .select(`
+        group_id,
+        groups ( * )
+      `)
+      .eq('user_id', req.session.user_id)
+    
+    if (error) {
+      logError('groups-me', error)
+      res.status(500).json({ error: error.message })
+      return
+    }
+    const groups = data.map(item => item.groups).filter(Boolean)
+    res.json({ groups })
+  } catch (error) {
+    logError('groups-me', error)
+    res.status(500).json({ error: 'Failed to list my groups' })
+  }
+})
+
+app.get('/api/groups', requireSession, async (req, res) => {
+  try {
+    const { data, error } = await serviceClient
+      .from('groups')
+      .select('*')
+      .eq('is_public', true)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    
+    if (error) {
+      logError('groups-list', error)
+      res.status(500).json({ error: error.message })
+      return
+    }
+    res.json({ groups: data })
+  } catch (error) {
+    logError('groups-list', error)
+    res.status(500).json({ error: 'Failed to list groups' })
+  }
+})
+
+app.post('/api/groups', requireSession, async (req, res) => {
+  try {
+    const { name, description, is_public, vibe_tags } = req.body
+    if (!name) {
+      res.status(400).json({ error: 'Group name is required' })
+      return
+    }
+    const { data, error } = await serviceClient
+      .from('groups')
+      .insert({
+        name,
+        description,
+        is_public: is_public !== false,
+        created_by: req.session.user_id,
+        vibe_tags: Array.isArray(vibe_tags) ? vibe_tags : [],
+      })
+      .select()
+      .single()
+
+    if (error) {
+      logError('groups-create', error)
+      res.status(400).json({ error: error.message })
+      return
+    }
+
+    await serviceClient.from('group_members').insert({
+      group_id: data.id,
+      user_id: req.session.user_id,
+      role: 'admin',
+    })
+
+    res.json({ group: data })
+  } catch (error) {
+    logError('groups-create', error)
+    res.status(500).json({ error: 'Failed to create group' })
+  }
+})
+
+app.post('/api/groups/:id/join', requireSession, async (req, res) => {
+  try {
+    const { error } = await serviceClient
+      .from('group_members')
+      .insert({
+        group_id: req.params.id,
+        user_id: req.session.user_id,
+        role: 'member',
+      })
+    if (error) {
+      if (error.code === '23505') {
+        res.json({ ok: true })
+        return
+      }
+      logError('groups-join', error)
+      res.status(400).json({ error: error.message })
+      return
+    }
+    res.json({ ok: true })
+  } catch (error) {
+    logError('groups-join', error)
+    res.status(500).json({ error: 'Failed to join group' })
+  }
+})
+
+app.get('/api/groups/:id/messages', requireSession, async (req, res) => {
+  try {
+    const { data: messages, error: msgError } = await serviceClient
+      .from('messages')
+      .select('id, content, created_at, user_id')
+      .eq('group_id', req.params.id)
+      .order('created_at', { ascending: false })
+      .limit(50)
+    
+    if (msgError) {
+      logError('messages-list', msgError)
+      res.status(500).json({ error: msgError.message })
+      return
+    }
+
+    const userIds = [...new Set((messages || []).map(m => m.user_id).filter(Boolean))]
+    let profilesMap = {}
+    
+    if (userIds.length > 0) {
+      const { data: profiles } = await serviceClient
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .in('id', userIds)
+      
+      for (const p of profiles || []) {
+        profilesMap[p.id] = { username: p.username, avatar_url: p.avatar_url }
+      }
+    }
+
+    const enriched = (messages || []).map(m => ({
+      ...m,
+      profiles: profilesMap[m.user_id] || { username: 'Unknown', avatar_url: null }
+    }))
+
+    res.json({ messages: enriched.reverse() })
+  } catch (error) {
+    logError('messages-list', error)
+    res.status(500).json({ error: 'Failed to load messages' })
+  }
+})
+
+app.post('/api/groups/:id/messages', requireSession, async (req, res) => {
+  try {
+    const { content } = req.body
+    if (!content) {
+      res.status(400).json({ error: 'Content is required' })
+      return
+    }
+    
+    const embedding = await createEmbedding(content)
+
+    const { data, error } = await serviceClient
+      .from('messages')
+      .insert({
+        group_id: req.params.id,
+        user_id: req.session.user_id,
+        content,
+        embedding,
+      })
+      .select()
+      .single()
+
+    if (error) {
+      logError('messages-create', error)
+      res.status(400).json({ error: error.message })
+      return
+    }
+    res.json({ message: data })
+  } catch (error) {
+    logError('messages-create', error)
+    res.status(500).json({ error: 'Failed to send message' })
+  }
+})
+
+app.get('/api/friends', requireSession, async (req, res) => {
+  try {
+    const { data: following } = await serviceClient
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', req.session.user_id)
+    
+    const followingIds = (following || []).map(f => f.following_id)
+    
+    if (followingIds.length === 0) {
+      res.json({ friends: [] })
+      return
+    }
+
+    const { data: friendsData, error } = await serviceClient
+      .from('profiles')
+      .select('*')
+      .in('id', followingIds)
+    
+    if (error) {
+      res.status(500).json({ error: error.message })
+      return
+    }
+    res.json({ friends: friendsData })
+  } catch (error) {
+    logError('friends-list', error)
+    res.status(500).json({ error: 'Failed to list friends' })
+  }
+})
+
+app.get('/api/profiles/me/stats', requireSession, async (req, res) => {
+  try {
+    const { count: followingCount } = await serviceClient
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', req.session.user_id)
+
+    const { count: followersCount } = await serviceClient
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', req.session.user_id)
+
+    res.json({ 
+      following: followingCount || 0, 
+      followers: followersCount || 0 
+    })
+  } catch (error) {
+    logError('profile-stats', error)
+    res.status(500).json({ error: 'Failed to get stats' })
+  }
+})
+
+app.get('/api/profiles/:userId/stats', requireSession, async (req, res) => {
+  try {
+    const { count: followingCount } = await serviceClient
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('follower_id', req.params.userId)
+
+    const { count: followersCount } = await serviceClient
+      .from('follows')
+      .select('*', { count: 'exact', head: true })
+      .eq('following_id', req.params.userId)
+
+    const { data: isFollowing } = await serviceClient
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', req.session.user_id)
+      .eq('following_id', req.params.userId)
+      .maybeSingle()
+
+    res.json({ 
+      following: followingCount || 0, 
+      followers: followersCount || 0,
+      isFollowing: !!isFollowing
+    })
+  } catch (error) {
+    logError('profile-stats', error)
+    res.status(500).json({ error: 'Failed to get profile stats' })
+  }
+})
+
+app.post('/api/users/:id/follow', requireSession, async (req, res) => {
+  try {
+    const { error } = await serviceClient
+      .from('follows')
+      .insert({
+        follower_id: req.session.user_id,
+        following_id: req.params.id
+      })
+    if (error && error.code !== '23505') {
+      throw error
+    }
+    res.json({ ok: true })
+  } catch (error) {
+    logError('follow-user', error)
+    res.status(500).json({ error: 'Failed to follow user' })
   }
 })
 

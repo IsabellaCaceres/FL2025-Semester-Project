@@ -1,5 +1,4 @@
-// screens/GroupsScreen.js
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,55 +8,85 @@ import {
   Alert,
   Switch,
   Modal,
+  ActivityIndicator,
+  Platform,
+  useWindowDimensions,
+  KeyboardAvoidingView
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import styles from "../styling/GroupsScreen.styles";
-import { allGroups } from "../data/data";
-import { useLibrary } from "../lib/library-context";
+import { theme } from "../styling/theme";
+import { fetchGroups, fetchMyGroups, createGroup, joinGroup } from "../lib/api";
 import GroupModal from "../components/GroupModal"; 
 
 export default function GroupsScreen() {
-  const { library } = useLibrary();
   const [myGroups, setMyGroups] = useState([]);
+  const [publicGroups, setPublicGroups] = useState([]);
   const [showBrowse, setShowBrowse] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [showJoinButton, setShowJoinButton] = useState(false);
+  const [loading, setLoading] = useState(true);
+
   const [groupName, setGroupName] = useState("");
   const [vibeTags, setVibeTags] = useState("");
-  const [maxMembers, setMaxMembers] = useState("10");
+  const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
   const [invitees, setInvitees] = useState("");
-
+  
   const navigation = useNavigation();
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === "web" && width > 768;
 
-  const handleCreateGroup = () => {
+  const loadGroups = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [my, publicData] = await Promise.all([
+        fetchMyGroups(),
+        fetchGroups()
+      ]);
+      setMyGroups(my);
+      setPublicGroups(publicData);
+    } catch (error) {
+      console.error("Failed to load groups", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadGroups();
+    }, [loadGroups])
+  );
+
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) {
       Alert.alert("Missing info", "Group name is required.");
       return;
     }
-    if (parseInt(maxMembers, 10) > 256 || parseInt(maxMembers, 10) < 2) {
-      Alert.alert("Invalid number", "Max members must be between 2 and 256.");
-      return;
+
+    try {
+      const newGroup = await createGroup({
+        name: groupName.trim(),
+        description: description.trim(),
+        vibe_tags: vibeTags.split(",").map((tag) => tag.trim()).filter(Boolean),
+        is_public: isPublic,
+      });
+      
+      if (newGroup) {
+        setShowCreateModal(false);
+        setGroupName("");
+        setVibeTags("");
+        setDescription("");
+        setIsPublic(true);
+        loadGroups(); 
+        Alert.alert("Success", "Group created!");
+      }
+    } catch (err) {
+      Alert.alert("Error", "Failed to create group");
     }
-
-    const newGroup = {
-      id: Date.now(),
-      name: groupName.trim(),
-      vibeTags: vibeTags.split(",").map((tag) => tag.trim()).filter(Boolean),
-      maxMembers: parseInt(maxMembers, 10),
-      isPublic,
-      invitees: invitees.split(",").map((i) => i.trim()).filter(Boolean),
-    };
-    setMyGroups([...myGroups, newGroup]);
-   setShowCreateModal(false);
-
-    setGroupName("");
-    setVibeTags("");
-    setMaxMembers("10");
-    setIsPublic(true);
-    setInvitees("");
   };
 
   const handleJoinGroupClick = (group) => {
@@ -65,60 +94,79 @@ export default function GroupsScreen() {
     setShowJoinButton(true);
   };
 
-  const handleJoinGroup = () => {
-    if (myGroups.some((g) => g.id === selectedGroup.id)) {
-      Alert.alert("Already joined", `You're already in "${selectedGroup.name}"`);
+  const handleJoinGroup = async () => {
+    if (!selectedGroup) return;
+    try {
+      await joinGroup(selectedGroup.id);
+      Alert.alert("Joined", `You joined "${selectedGroup.name}"`);
+      setShowJoinButton(false);
       setSelectedGroup(null);
-      return;
+      loadGroups(); 
+    } catch (err) {
+      Alert.alert("Error", "Failed to join group");
     }
-    setMyGroups([...myGroups, selectedGroup]);
-    setSelectedGroup(null);
-    Alert.alert("Joined", `You joined "${selectedGroup.name}"`);
   };
 
   const handleOpenGroup = (group) => {
-    setSelectedGroup(group);
-    setShowJoinButton(false);
+    navigation.navigate("GroupChat", { groupId: group.id, title: group.name });
   };
 
-  const handleCloseGroup = () => {
+  const handleCloseModal = () => {
     setSelectedGroup(null);
     setShowJoinButton(false);
   };
 
-  // Suggested groups (exclude ones already joined)
-  const suggestedGroups = allGroups.filter(
+  const suggestedGroups = publicGroups.filter(
     (group) => !myGroups.some((g) => g.id === group.id)
   );
+
+  if (loading && !myGroups.length && !publicGroups.length) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={theme.colors.black} />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.groupsHeader}>
         <Text style={styles.headerTitle}>
-          {showBrowse ? "Browse Groups" : myGroups.length ? "My Groups" : "Suggested Groups"}
+          {showBrowse ? "Browse Groups" : "My Groups"}
         </Text>
         <Pressable style={styles.button} onPress={() => setShowCreateModal(true)}>
           <Text style={styles.buttonLabel}>Create Group</Text>
         </Pressable>
       </View>
 
-      <ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         {showBrowse ? (
           <>
-            {suggestedGroups.map((group) => (
-              <View key={group.id} style={styles.groupCard}>
-                <Text style={styles.groupName}>{group.name}</Text>
-                <Text style={styles.groupBook}>
-                  Related to {group.relatedBook}
-                </Text>
-                <Pressable
-                  style={styles.button}
-                  onPress={() => handleJoinGroupClick(group)}
-                >
-                  <Text style={styles.buttonLabel}>Join Group</Text>
-                </Pressable>
-              </View>
-            ))}
+            {suggestedGroups.length === 0 ? (
+              <Text style={{ padding: 20, textAlign: 'center', fontFamily: theme.fonts.text, fontSize: 16 }}>No new groups to join.</Text>
+            ) : (
+              suggestedGroups.map((group) => (
+                <View key={group.id} style={styles.groupCard}>
+                  <Text style={styles.groupName}>{group.name}</Text>
+                  <Text style={styles.groupBook} numberOfLines={2}>
+                    {group.description || "No description"}
+                  </Text>
+                  {group.vibe_tags?.length ? (
+                    <View style={{ flexDirection: 'row', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                      {group.vibe_tags.map((t, i) => (
+                         <Text key={i} style={{ fontSize: 12, color: theme.colors.black, backgroundColor: 'rgba(0,0,0,0.05)', padding: 2 }}>#{t}</Text>
+                      ))}
+                    </View>
+                  ) : null}
+                  <Pressable
+                    style={[styles.button, { marginTop: 12 }]}
+                    onPress={() => handleJoinGroupClick(group)}
+                  >
+                    <Text style={styles.buttonLabel}>Join Group</Text>
+                  </Pressable>
+                </View>
+              ))
+            )}
             <Pressable
               style={[styles.button, styles.groupButton]}
               onPress={() => setShowBrowse(false)}
@@ -126,113 +174,115 @@ export default function GroupsScreen() {
               <Text style={styles.buttonLabel}>Back to My Groups</Text>
             </Pressable>
           </>
-        ) : myGroups.length > 0 ? (
-          <>
-            {myGroups.map((group) => (
-              <Pressable
-                key={group.id}
-                style={styles.groupCard}
-                onPress={() => handleOpenGroup(group)}
-                accessibilityRole="button"
-              >
-                <Text style={styles.groupName}>{group.name}</Text>
-                <Text style={styles.groupBook}>
-                  {group.isPublic ? "Public" : "Private"} | Max {group.maxMembers} members
-                </Text>
-                {group.vibeTags?.length ? (
-                  <Text style={styles.groupBook}>Tags: {group.vibeTags.join(", ")}</Text>
-                ) : null}
-              </Pressable>
-            ))}
-            <Pressable
-              style={[styles.button, styles.groupButton]}
-              onPress={() => setShowBrowse(true)}
-            >
-              <Text style={styles.buttonLabel}>Browse Groups</Text>
-            </Pressable>
-          </>
         ) : (
-          suggestedGroups.map((group) => (
-            <View key={group.id} style={styles.groupCard}>
-              <Text style={styles.groupName}>{group.name}</Text>
-              <Text style={styles.groupBook}>
-                Related to {group.relatedBook}
-              </Text>
-              <Pressable
-                style={styles.button}
-                onPress={() => handleJoinGroupClick(group)}
-              >
-                <Text style={styles.buttonLabel}>Join Group</Text>
-              </Pressable>
-            </View>
-          ))
+          <>
+            {myGroups.length === 0 ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Text style={{ fontFamily: theme.fonts.text, fontSize: 16, marginBottom: 20, textAlign: 'center' }}>
+                  You haven't joined any groups yet.
+                </Text>
+                <Pressable
+                  style={[styles.button, styles.groupButton]}
+                  onPress={() => setShowBrowse(true)}
+                >
+                  <Text style={styles.buttonLabel}>Browse Groups</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <>
+                {myGroups.map((group) => (
+                  <Pressable
+                    key={group.id}
+                    style={styles.groupCard}
+                    onPress={() => handleOpenGroup(group)}
+                  >
+                    <Text style={styles.groupName}>{group.name}</Text>
+                    <Text style={styles.groupBook}>
+                      {group.is_public ? "Public" : "Private"}
+                    </Text>
+                     {group.vibe_tags?.length ? (
+                      <Text style={{ fontSize: 12, color: theme.colors.black, marginTop: 4 }}>
+                        {group.vibe_tags.join(", ")}
+                      </Text>
+                    ) : null}
+                  </Pressable>
+                ))}
+                <Pressable
+                  style={[styles.button, styles.groupButton]}
+                  onPress={() => setShowBrowse(true)}
+                >
+                  <Text style={styles.buttonLabel}>Browse More Groups</Text>
+                </Pressable>
+              </>
+            )}
+          </>
         )}
       </ScrollView>
 
-      {/* Modal for viewing group details */}
       <GroupModal
         visible={!!selectedGroup}
         selectedGroup={selectedGroup}
         showJoinButton={showJoinButton}
-        onClose={handleCloseGroup}
+        onClose={handleCloseModal}
         onJoinGroup={handleJoinGroup}
         myGroups={myGroups}
       />
 
-      {/* Modal for creating groups */}
       <Modal
         visible={showCreateModal}
-        animationType="slide"
-        transparent
+        animationType={isDesktop ? "fade" : "slide"}
+        transparent={true}
         onRequestClose={() => setShowCreateModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.headerTitle}>Create a New Group</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Group Name"
-              value={groupName}
-              onChangeText={setGroupName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Vibe Tags (comma separated)"
-              value={vibeTags}
-              onChangeText={setVibeTags}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Max Members (2-256)"
-              value={maxMembers}
-              onChangeText={setMaxMembers}
-              keyboardType="numeric"
-            />
-            <View style={styles.switchRow}>
-              <Text style={styles.switchLabel}>Public?</Text>
-              <Switch value={isPublic} onValueChange={setIsPublic} />
-            </View>
-            <TextInput
-              style={styles.input}
-              placeholder="Invite Friends (comma-separated emails)"
-              value={invitees}
-              onChangeText={setInvitees}
-            />
+          <View style={[styles.modalContainer, isDesktop && { width: 500, maxHeight: '90%' }]}>
+            <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+                <Text style={styles.headerTitle}>Create a New Group</Text>
+                <TextInput
+                style={styles.input}
+                placeholder="Group Name"
+                value={groupName}
+                onChangeText={setGroupName}
+                />
+                <TextInput
+                style={[styles.input, { height: 80 }]}
+                placeholder="Description (optional)"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                />
+                <TextInput
+                style={styles.input}
+                placeholder="Vibe Tags (comma separated)"
+                value={vibeTags}
+                onChangeText={setVibeTags}
+                />
+                <View style={styles.switchRow}>
+                <Text style={styles.switchLabel}>Public?</Text>
+                <Switch value={isPublic} onValueChange={setIsPublic} trackColor={{ true: theme.colors.teal }} />
+                </View>
+                <TextInput
+                style={styles.input}
+                placeholder="Invite Friends (comma-separated emails)"
+                value={invitees}
+                onChangeText={setInvitees}
+                />
 
-            <View style={styles.modalButtonRow}>
-              <Pressable
-                style={[styles.button, styles.modalButton]}
-                onPress={handleCreateGroup}
-              >
-                <Text style={styles.buttonLabel}>Create</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.button, styles.buttonMuted, styles.modalButton]}
-                onPress={() => setShowCreateModal(false)}
-              >
-                <Text style={styles.buttonLabel}>Cancel</Text>
-              </Pressable>
-            </View>
+                <View style={styles.modalButtonRow}>
+                <Pressable
+                    style={[styles.button, styles.modalButton]}
+                    onPress={handleCreateGroup}
+                >
+                    <Text style={styles.buttonLabel}>Create</Text>
+                </Pressable>
+                <Pressable
+                    style={[styles.button, styles.buttonMuted, styles.modalButton]}
+                    onPress={() => setShowCreateModal(false)}
+                >
+                    <Text style={styles.buttonLabel}>Cancel</Text>
+                </Pressable>
+                </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>

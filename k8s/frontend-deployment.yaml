@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: node:20
+          workingDir: /app
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              npm install -g bun
+              bun install
+              bun run web
+          ports:
+            - containerPort: 8081
+          env:
+            - name: EXPO_PUBLIC_API_URL
+              value: "http://localhost:4000" # Accessed from browser, so localhost (forwarded)
+          volumeMounts:
+            - name: app-code
+              mountPath: /app
+      volumes:
+        - name: app-code
+          hostPath:
+            path: /Users/andrew/Desktop/FL2025-Semester-Project
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  type: NodePort
+  ports:
+    - port: 8081
+      targetPort: 8081
+      nodePort: 30080

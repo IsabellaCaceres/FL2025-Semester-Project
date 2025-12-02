@@ -5,7 +5,7 @@ import { theme } from "./theme";
 export default StyleSheet.create({
     fullscreenContainer: {
         flex: 1,
-        backgroundColor: 'transparent',
+        backgroundColor: theme.colors.teal,
     },
 
     backgroundImageAbsolute: {
@@ -106,19 +106,22 @@ absoluteCloseButton: {
         flex: 1,
     },
     bookDetailTitle: {
-        fontSize: theme.fontSizes.lg,
+        fontFamily: theme.fonts.subheading,
+        fontSize: theme.fontSizes.xl,
         fontWeight: theme.fontWeight.semiBold,
         marginBottom: theme.spacing.sm + 2,
-        color: theme.colors.black,
+        color: theme.colors.teal,
     },
     bookDetailDescription: {
-        fontSize: theme.fontSizes.sm,
+        fontFamily: theme.fonts.text,
+        fontSize: theme.fontSizes.md,
         lineHeight: 20,
         color: theme.colors.black,
         marginBottom: theme.spacing.sm,
     },
     showMoreLink: {
-        fontSize: theme.fontSizes.sm,
+        fontFamily: theme.fonts.text,
+        fontSize: theme.fontSizes.md,
         color: theme.colors.teal,
         textDecorationLine: "underline",
         marginTop: theme.spacing.xs,
@@ -157,9 +160,11 @@ absoluteCloseButton: {
         color: theme.colors.offwhite,
     },
     openChatButton: {
-        backgroundColor: theme.colors.teal,
-        marginTop: theme.spacing.sm,
-        marginBottom: theme.spacing.xs,
+       backgroundColor: theme.colors.teal,
+        paddingHorizontal: theme.spacing.sm,
+        paddingVertical: theme.spacing.md,
+        borderRadius: theme.borderRadius.xl,
+        alignItems: "center",
     },
     modalCloseButton: {
         marginTop: theme.spacing.sm,

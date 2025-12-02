@@ -1,9 +1,11 @@
-// styling/profileStyles.js
 import { theme } from "./theme";
 
 export const profileStyles = {
   container: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     padding: theme.spacing.xl,
@@ -12,6 +14,20 @@ export const profileStyles = {
   },
   avatarContainer: {
     marginBottom: theme.spacing.md,
+    position: "relative",
+  },
+  editBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    backgroundColor: theme.colors.teal,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "white",
   },
   avatar: {
     width: 120,
@@ -59,6 +75,7 @@ export const profileStyles = {
     paddingVertical: theme.spacing.lg,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.lightgray,
+    cursor: "pointer",
   },
   menuItemLast: {
     borderBottomWidth: 0,

@@ -1,11 +1,12 @@
 // screens/LibraryScreen.js
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { View, Text, ScrollView, Pressable, Image, TextInput, Modal, Alert } from "react-native";
+import { View, Text, ScrollView, Pressable, Image, TextInput, Modal, Alert, ActivityIndicator, Platform, useWindowDimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "../styling/LibrarysScreen.styles";
 import { useLibrary } from "../lib/library-context";
 import BookModal from "../components/BookModal";
 import { fetchLists, createList } from "../lib/api";
+import { theme } from "../styling/theme";
 
 export default function LibraryScreen() {
   const { library, allBooks, isLoading, getBookRecord } = useLibrary();
@@ -17,6 +18,9 @@ export default function LibraryScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBooks, setSelectedBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
+
+  const { width } = useWindowDimensions();
+  const isDesktop = Platform.OS === "web" && width > 768;
 
   const booksByHash = useMemo(() => {
     const map = new Map();
@@ -289,8 +293,8 @@ export default function LibraryScreen() {
 
       <Modal
         visible={showCreateListModal}
-        animationType="fade"
-        transparent
+        animationType={isDesktop ? "fade" : "slide"}
+        transparent={true}
         onRequestClose={() => {
           setShowCreateListModal(false);
           setSelectedBooks([]);
