@@ -57,7 +57,16 @@ function GroupStack() {
       <Stack.Screen
         name="GroupChat"
         component={GroupChatScreen}
-        options={({ route }) => ({ title: route.params?.group?.name ?? "Group Chat" })}
+        // options={({ route }) => ({ title: route.params?.group?.name ?? "Group Chat" })}
+        options={({ route }) => ({
+          title: route.params?.group?.name ?? "Group Chat",
+          headerStyle: { backgroundColor: theme.colors.black },
+          headerTitleStyle: {
+            fontFamily: theme.fonts.subheading,
+            fontSize: theme.fontSizes.xxl,
+          },
+          headerTintColor: theme.colors.offwhite,
+        })}
       />
     </Stack.Navigator>
   );
@@ -143,12 +152,12 @@ function TopTabBar({ state, descriptors, navigation, profileInitial }) {
                   styles.navigation.topBarItem,
                   isFocused ? styles.navigation.topBarItemActive : null,
                   isCompact
-                      ? { flexBasis: 60, flexGrow: 0 } // fixed narrow width
-                      : { flex: 1 }, // spread evenly on wide screens
+                    ? { flexBasis: 60, flexGrow: 0 } // fixed narrow width
+                    : { flex: 1 }, // spread evenly on wide screens
                 ]}
               >
                 {getIcon(route.name, isFocused)}
-                {!isCompact && ( // 👈 hide labels if width < 500
+                {!isCompact && (
                   <Text
                     style={[
                       styles.navigation.topBarLabel,
@@ -371,7 +380,7 @@ export default function App() {
   };
 
   if (loading) {
-    return <View style={{ flex: 1, backgroundColor: "white" }} />;
+    return <View style={{ flex: 1, backgroundColor: theme.colors.offwhite }} />;
   }
 
   if (!user) {
@@ -412,20 +421,25 @@ export default function App() {
     <LibraryProvider user={user}>
       <NavigationContainer>
         <Tab.Navigator
-          screenOptions={{
-            headerShown: false,
-            tabBarStyle: { height: 0 },
+          screenOptions={{ headerShown: false }}
+          tabBar={(props) => {
+            const currentRoute = props.state.routes[props.state.index].name;
+
+            // Hide nav bar when inside GroupChat
+            const nestedState = props.state.routes.find(r => r.name === "My Groups")?.state;
+            const nestedRouteName = nestedState?.routes[nestedState.index]?.name;
+
+            if (nestedRouteName === "GroupChat") {
+              return null;
+            }
+
+            return (
+              <TopTabBar
+                {...props}
+                profileInitial={displayName ? displayName.charAt(0) : "A"}
+              />
+            );
           }}
-          sceneContainerStyle={{
-            paddingTop: 76,
-            backgroundColor: theme.colors.offwhite,
-          }}
-          tabBar={(props) => (
-            <TopTabBar
-              {...props}
-              profileInitial={displayName ? displayName.charAt(0) : "A"}
-            />
-          )}
         >
           <Tab.Screen name="Home" component={HomeScreen} />
           <Tab.Screen name="Library" component={LibraryScreen} />
