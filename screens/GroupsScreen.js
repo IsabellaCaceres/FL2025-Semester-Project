@@ -15,7 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import styles from "../styling/GroupsScreen.styles";
 import { allGroups } from "../data/data";
 import { useLibrary } from "../lib/library-context";
-import GroupModal from "../components/GroupModal"; 
+import GroupModal from "../components/GroupModal";
 
 export default function GroupsScreen() {
   const { library } = useLibrary();
@@ -51,7 +51,7 @@ export default function GroupsScreen() {
       invitees: invitees.split(",").map((i) => i.trim()).filter(Boolean),
     };
     setMyGroups([...myGroups, newGroup]);
-   setShowCreateModal(false);
+    setShowCreateModal(false);
 
     setGroupName("");
     setVibeTags("");
@@ -102,6 +102,15 @@ export default function GroupsScreen() {
         </Pressable>
       </View>
 
+      {(showBrowse && myGroups.length) ? (
+        <Pressable
+          style={styles.button}
+          onPress={() => setShowBrowse(false)}
+        >
+          <Text style={styles.buttonLabel}>Back to My Groups</Text>
+        </Pressable>
+      ):(<></>)}
+
       <ScrollView>
         {showBrowse ? (
           <>
@@ -119,12 +128,7 @@ export default function GroupsScreen() {
                 </Pressable>
               </View>
             ))}
-            <Pressable
-              style={[styles.button, styles.groupButton]}
-              onPress={() => setShowBrowse(false)}
-            >
-              <Text style={styles.buttonLabel}>Back to My Groups</Text>
-            </Pressable>
+
           </>
         ) : myGroups.length > 0 ? (
           <>

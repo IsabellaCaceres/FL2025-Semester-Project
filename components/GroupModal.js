@@ -122,7 +122,7 @@ export default function GroupModal({
 
                             {!showJoinButton && (
                                 <Pressable
-                                    style={[styles.button, styles.openChatButton]}
+                                    style={[styles.button,, styles.openChatButton]}
                                     onPress={handleOpenChat}
                                 >
                                     <Text style={styles.buttonLabel}>Open Chat</Text>

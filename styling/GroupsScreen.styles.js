@@ -29,6 +29,7 @@ export default StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     alignItems: "center",
     marginVertical: theme.spacing.sm,
+    padding: theme.spacing.md
   },
   buttonLabel: {
     color: theme.colors.offwhite,
@@ -36,7 +37,7 @@ export default StyleSheet.create({
     fontSize: theme.fontSizes.md,
   },
   buttonMuted: {
-    backgroundColor: theme.colors.black,
+    backgroundColor: theme.colors.beige,
   },
   groupButton: {
     alignSelf: "center",
@@ -60,19 +61,21 @@ export default StyleSheet.create({
 
   // Group cards
   groupCard: {
-    backgroundColor: theme.colors.teal,
+    backgroundColor: theme.colors.beige,
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.md,
     marginBottom: theme.spacing.md,
   },
   groupName: {
-    fontSize: theme.fontSizes.md,
+    fontFamily: theme.fonts.subheading,
+    fontSize: theme.fontSizes.xl,
     fontWeight: theme.fontWeight.semiBold,
     marginBottom: theme.spacing.xs,
-    color: theme.colors.offwhite,
+    color: theme.colors.black,
   },
   groupBook: {
-    color: theme.colors.offwhite,
+    color: theme.colors.black,
+    fontFamily: theme.fonts.text,
   },
 
   // Modal basics
