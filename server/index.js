@@ -498,27 +498,205 @@ app.post('/api/search/semantic', requireSession, async (req, res) => {
     }
 
     const isSocialQuery = trimmed.startsWith('@') || 
-                          /friends|group|chat|people|saying/.test(trimmed.toLowerCase());
+                          /friends|group|chat|people|saying|followers|following|reading/.test(trimmed.toLowerCase());
+    
+    const isFollowersReadingQuery = /followers?.*(reading|library|books)|what.*(followers?).*(reading|like|library)/.test(trimmed.toLowerCase());
+    const isFollowingReadingQuery = /following.*(reading|library|books)|people\s*i\s*follow.*(reading|library)|what.*(friends|following).*(reading|like|library)/.test(trimmed.toLowerCase());
+    
+    if (isFollowingReadingQuery) {
+       const { data: following } = await serviceClient
+         .from('follows')
+         .select('following_id')
+         .eq('follower_id', req.session.user_id);
+       
+       const followingIds = (following || []).map(f => f.following_id);
+       
+       if (followingIds.length === 0) {
+         res.json({
+           query: trimmed,
+           reasoning: "You're not following anyone yet. Follow some users to see what they're reading!",
+           results: [],
+           type: 'social'
+         });
+         return;
+       }
+
+       const { data: followingProfiles } = await serviceClient
+         .from('profiles')
+         .select('id, username')
+         .in('id', followingIds);
+       
+       const profileMap = {};
+       for (const p of followingProfiles || []) {
+         profileMap[p.id] = p.username;
+       }
+
+       const { data: followingBooks } = await serviceClient
+         .from('user_books')
+         .select('user_id, book_id, books (id, title, author)')
+         .in('user_id', followingIds);
+
+       if (!followingBooks || followingBooks.length === 0) {
+         const followingNames = Object.values(profileMap).map(n => `@${n}`).join(', ');
+         res.json({
+           query: trimmed,
+           reasoning: `The people you follow (${followingNames}) haven't added any books to their libraries yet.`,
+           results: [],
+           type: 'social'
+         });
+         return;
+       }
+
+       const libraryByUser = {};
+       for (const entry of followingBooks) {
+         const username = profileMap[entry.user_id] || 'unknown';
+         if (!libraryByUser[username]) {
+           libraryByUser[username] = [];
+         }
+         if (entry.books) {
+           libraryByUser[username].push(`"${entry.books.title}" by ${entry.books.author}`);
+         }
+       }
+
+       const context = Object.entries(libraryByUser)
+         .map(([username, books]) => `@${username} is reading: ${books.join(', ')}`)
+         .join('\n');
+
+       const completion = await openaiClient.chat.completions.create({
+         model: 'gpt-4o-mini',
+         messages: [
+           { role: 'system', content: 'You are a helpful assistant summarizing what books people are reading. Be concise and friendly.' },
+           { role: 'user', content: `Query: ${trimmed}\n\nLibraries of people you follow:\n${context}` }
+         ]
+       });
+       
+       const reasoning = completion.choices[0]?.message?.content || "Here's what people you follow are reading.";
+       
+       res.json({
+         query: trimmed,
+         reasoning,
+         results: [],
+         type: 'social'
+       });
+       return;
+    }
+    
+    if (isFollowersReadingQuery) {
+       const { data: followers } = await serviceClient
+         .from('follows')
+         .select('follower_id')
+         .eq('following_id', req.session.user_id);
+       
+       const followerIds = (followers || []).map(f => f.follower_id);
+       
+       if (followerIds.length === 0) {
+         res.json({
+           query: trimmed,
+           reasoning: "You don't have any followers yet. Once people follow you, I can tell you what they're reading!",
+           results: [],
+           type: 'social'
+         });
+         return;
+       }
+
+       const { data: followerProfiles } = await serviceClient
+         .from('profiles')
+         .select('id, username')
+         .in('id', followerIds);
+       
+       const profileMap = {};
+       for (const p of followerProfiles || []) {
+         profileMap[p.id] = p.username;
+       }
+
+       const { data: followerBooks } = await serviceClient
+         .from('user_books')
+         .select('user_id, book_id, books (id, title, author)')
+         .in('user_id', followerIds);
+
+       if (!followerBooks || followerBooks.length === 0) {
+         const followerNames = Object.values(profileMap).map(n => `@${n}`).join(', ');
+         res.json({
+           query: trimmed,
+           reasoning: `Your followers (${followerNames}) haven't added any books to their libraries yet.`,
+           results: [],
+           type: 'social'
+         });
+         return;
+       }
+
+       const libraryByUser = {};
+       for (const entry of followerBooks) {
+         const username = profileMap[entry.user_id] || 'unknown';
+         if (!libraryByUser[username]) {
+           libraryByUser[username] = [];
+         }
+         if (entry.books) {
+           libraryByUser[username].push(`"${entry.books.title}" by ${entry.books.author}`);
+         }
+       }
+
+       const context = Object.entries(libraryByUser)
+         .map(([username, books]) => `@${username} is reading: ${books.join(', ')}`)
+         .join('\n');
+
+       const completion = await openaiClient.chat.completions.create({
+         model: 'gpt-4o-mini',
+         messages: [
+           { role: 'system', content: 'You are a helpful assistant summarizing what books people are reading. Be concise and friendly.' },
+           { role: 'user', content: `Query: ${trimmed}\n\nYour followers' libraries:\n${context}` }
+         ]
+       });
+       
+       const reasoning = completion.choices[0]?.message?.content || "Here's what your followers are reading.";
+       
+       res.json({
+         query: trimmed,
+         reasoning,
+         results: [],
+         type: 'social'
+       });
+       return;
+    }
     
     if (isSocialQuery) {
-       const { data: publicGroups } = await serviceClient
+       const { data: allGroups } = await serviceClient
          .from('groups')
-         .select('id')
-         .eq('is_public', true);
+         .select('id, name, is_public');
        
-       const { data: myGroups } = await serviceClient
+       const { data: myGroupMemberships } = await serviceClient
          .from('group_members')
          .select('group_id')
          .eq('user_id', req.session.user_id);
        
-       const myGroupIds = (myGroups || []).map(g => g.group_id);
-       const publicGroupIds = (publicGroups || []).map(g => g.id);
-       const allGroupIds = [...new Set([...myGroupIds, ...publicGroupIds])];
+       const myGroupIds = new Set((myGroupMemberships || []).map(g => g.group_id));
+       const queryLower = trimmed.toLowerCase();
+       
+       let targetGroupIds = [];
+       let targetGroupName = null;
+       
+       for (const group of allGroups || []) {
+         const groupNameLower = group.name.toLowerCase();
+         if (queryLower.includes(groupNameLower) || queryLower.includes(groupNameLower.replace(/\s+/g, ''))) {
+           if (group.is_public || myGroupIds.has(group.id)) {
+             targetGroupIds.push(group.id);
+             targetGroupName = group.name;
+           }
+         }
+       }
+       
+       if (targetGroupIds.length === 0) {
+         for (const group of allGroups || []) {
+           if (group.is_public || myGroupIds.has(group.id)) {
+             targetGroupIds.push(group.id);
+           }
+         }
+       }
 
        const { data: allMessages } = await serviceClient
          .from('messages')
          .select('id, content, user_id, group_id')
-         .in('group_id', allGroupIds.length ? allGroupIds : ['00000000-0000-0000-0000-000000000000'])
+         .in('group_id', targetGroupIds.length ? targetGroupIds : ['00000000-0000-0000-0000-000000000000'])
          .order('created_at', { ascending: false })
          .limit(50);
 
@@ -529,7 +707,7 @@ app.post('/api/search/semantic', requireSession, async (req, res) => {
           query_embedding: embedding,
           match_threshold: 0.2,
           match_count: 20,
-          filter_group_ids: allGroupIds.length ? allGroupIds : null 
+          filter_group_ids: targetGroupIds.length ? targetGroupIds : null 
         }
        );
 
@@ -563,11 +741,13 @@ app.post('/api/search/semantic', requireSession, async (req, res) => {
             ).join('\n');
           }
 
+          const groupContext = targetGroupName ? `the "${targetGroupName}" group chat` : 'the group chats';
+          
           const completion = await openaiClient.chat.completions.create({
             model: 'gpt-4o-mini',
             messages: [
-              { role: 'system', content: 'You are a helpful assistant summarizing what people are saying in a book club chat. Answer the question based on the messages. Be concise and friendly.' },
-              { role: 'user', content: `Query: ${trimmed}\n\nRecent messages from the group:\n${context}` }
+              { role: 'system', content: `You are a helpful assistant summarizing what people are saying in ${groupContext}. Answer the question based ONLY on the messages provided. If the messages don't contain relevant information, say so. Be concise and friendly.` },
+              { role: 'user', content: `Query: ${trimmed}\n\nMessages from ${groupContext}:\n${context}` }
             ]
           });
           
@@ -582,9 +762,13 @@ app.post('/api/search/semantic', requireSession, async (req, res) => {
           return;
        }
 
+       const noMsgText = targetGroupName 
+         ? `I couldn't find any messages in the "${targetGroupName}" group yet.`
+         : "I couldn't find any messages in your groups yet. Join a group and start chatting!";
+       
        res.json({
          query: trimmed,
-         reasoning: "I couldn't find any messages in your groups yet. Join a group and start chatting!",
+         reasoning: noMsgText,
          results: [],
          type: 'social'
        });
