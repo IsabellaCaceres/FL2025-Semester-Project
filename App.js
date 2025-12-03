@@ -29,6 +29,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useFonts } from 'expo-font';
+import { BebasNeue_400Regular } from '@expo-google-fonts/bebas-neue';
+import { Buenard_400Regular, Buenard_700Bold } from '@expo-google-fonts/buenard';
+import { Rokkitt_400Regular, Rokkitt_500Medium, Rokkitt_600SemiBold, Rokkitt_700Bold } from '@expo-google-fonts/rokkitt';
 
 
 const Tab = createBottomTabNavigator();
@@ -189,7 +192,13 @@ const DEFAULT_AUTH_STATUS =
 
 export default function App() {
   const [fontsLoaded] = useFonts({
-    BebasNeue: require("./assets/fonts/BebasNeue-Regular.ttf"),
+    BebasNeue: BebasNeue_400Regular,
+    Buenard: Buenard_400Regular,
+    'Buenard-Bold': Buenard_700Bold,
+    Rokkitt: Rokkitt_400Regular,
+    'Rokkitt-Medium': Rokkitt_500Medium,
+    'Rokkitt-SemiBold': Rokkitt_600SemiBold,
+    'Rokkitt-Bold': Rokkitt_700Bold,
   });
 
   const [username, setUsername] = useState("");
@@ -348,8 +357,8 @@ export default function App() {
     setAuthStage(AUTH_STAGES.SIGN_IN);
   };
 
-  if (loading) {
-    return <View style={{ flex: 1, backgroundColor: "white" }} />;
+  if (loading || !fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: theme.colors.offwhite }} />;
   }
 
   if (!user) {
